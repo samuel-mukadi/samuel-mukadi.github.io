@@ -61,3 +61,4 @@ Puis ouvrir l'adresse affichée (en général http://localhost:4321).
 | les images des projets                 | `public/images/`                    |
 | ma photo (dans « Qui suis-je ? »)      | `src/components/APropos.astro`      |
 | le titre et la description             | `src/pages/index.astro`             |
+| l'image d'aperçu (partage WhatsApp…)   | `outils/image-apercu.html`, puis `node outils/fabriquer-image-apercu.mjs` |
