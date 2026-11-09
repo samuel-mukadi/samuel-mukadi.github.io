@@ -1,0 +1,69 @@
+---
+// Squelette commun à toutes les pages : en-tête HTML, titre, description.
+import '../styles/global.css';
+
+interface Props {
+  titre: string;
+  description: string;
+}
+
+const { titre, description } = Astro.props;
+const adresse = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <!-- Sécurité : la page n'accepte que ses propres fichiers (scripts, styles, images).
+         Aucun script venu d'ailleurs, aucun formulaire, aucune intégration dans un autre site
+         par <object> ou <base>. -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{titre}</title>
+    <meta name="description" content={description} />
+    <meta name="author" content="Samuel Mukadi" />
+    <meta name="theme-color" content="#12141C" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <link rel="canonical" href={adresse} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+    <!-- Aperçu quand le lien est partagé (WhatsApp, Telegram…) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:title" content={titre} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={adresse} />
+
+    <!-- Signale que JavaScript marche (sert au menu du téléphone) -->
+    <script is:inline src="/scripts/js-actif.js"></script>
+  </head>
+  <body>
+    <a class="lien-evitement" href="#contenu">Aller au contenu</a>
+    <slot />
+
+    <script>
+      // Fait apparaître en douceur les blocs « surgit » quand ils arrivent à l'écran.
+      const blocs = document.querySelectorAll('.surgit');
+      if ('IntersectionObserver' in window) {
+        const observateur = new IntersectionObserver(
+          (entrees) => {
+            for (const entree of entrees) {
+              if (entree.isIntersecting) {
+                entree.target.classList.add('vu');
+                observateur.unobserve(entree.target);
+              }
+            }
+          },
+          { rootMargin: '0px 0px -10% 0px' },
+        );
+        blocs.forEach((bloc) => observateur.observe(bloc));
+      } else {
+        blocs.forEach((bloc) => bloc.classList.add('vu'));
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,79 @@
+---
+// Le rond vert WhatsApp, toujours en bas à droite de l'écran.
+// Il apparaît quand on a quitté le haut de page (qui a déjà son bouton WhatsApp)
+// et se cache en bas de page (qui a son grand rond doré « Écrire sur WhatsApp »).
+import { contact } from '../data/contact.js';
+---
+
+<a class="flottant" href={contact.whatsapp} target="_blank" rel="noopener noreferrer" aria-label="Écrire sur WhatsApp" data-flottant>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M3.5 20.5 5 16a8.5 8.5 0 1 1 3.2 3.2Z" />
+    <path d="M9.2 8.6c.2-.4.6-.5.9-.3l.9 1.6c.1.3 0 .6-.2.8l-.5.5a6 6 0 0 0 2.6 2.6l.5-.5c.2-.2.5-.3.8-.2l1.6.9c.3.2.4.6.2.9-.5 1-1.6 1.4-2.6 1a9 9 0 0 1-5.2-5.2c-.4-1 0-2 1-2.1Z" />
+  </svg>
+</a>
+
+<script>
+  const flottant = document.querySelector<HTMLElement>('[data-flottant]');
+  const zones = [document.getElementById('accueil'), document.querySelector('footer')]
+    .filter((z): z is HTMLElement => z !== null);
+
+  if (flottant && zones.length && 'IntersectionObserver' in window) {
+    const visibles = new Set<Element>();
+    const observateur = new IntersectionObserver((entrees) => {
+      for (const entree of entrees) {
+        if (entree.isIntersecting) visibles.add(entree.target);
+        else visibles.delete(entree.target);
+      }
+      flottant.classList.toggle('montre', visibles.size === 0);
+    }, { threshold: 0.15 });
+    zones.forEach((zone) => observateur.observe(zone));
+  }
+</script>
+
+<style>
+  .flottant {
+    position: fixed;
+    right: 16px;
+    bottom: calc(16px + env(safe-area-inset-bottom));
+    z-index: 40;
+    display: grid;
+    place-items: center;
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: var(--whatsapp);
+    color: #fff;
+    box-shadow: 0 14px 30px -8px rgba(18, 20, 28, 0.55);
+    -webkit-tap-highlight-color: transparent;
+    transition: opacity 0.3s ease, transform 0.4s var(--courbe), visibility 0s linear 0s;
+  }
+
+  @media (min-width: 768px) {
+    .flottant {
+      right: 28px;
+      bottom: 28px;
+    }
+  }
+
+  /* Caché tant que l'on est en haut de page (seulement si JavaScript marche) */
+  :global(.js) .flottant:not(.montre) {
+    opacity: 0;
+    transform: translateY(16px) scale(0.9);
+    visibility: hidden;
+    transition: opacity 0.3s ease, transform 0.4s var(--courbe), visibility 0s linear 0.4s;
+  }
+
+  .flottant:hover {
+    transform: translateY(-3px);
+  }
+
+  .flottant:active {
+    background: var(--or);
+    color: var(--nuit);
+  }
+
+  .flottant svg {
+    width: 28px;
+    height: 28px;
+  }
+</style>

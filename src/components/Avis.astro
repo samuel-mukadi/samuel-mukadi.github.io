@@ -1,0 +1,298 @@
+---
+// « Ce qu'ils pensent de moi » : les avis et les étoiles.
+// Les avis sont dans src/data/avis.js (seulement des avis vrais).
+// S'il y a plusieurs avis, on les montre un par un : on choisit avec les ronds (initiales).
+// Le bouton « Donner mon avis » ouvre WhatsApp avec un message déjà préparé.
+import { avis } from '../data/avis.js';
+import { contact } from '../data/contact.js';
+
+const total = avis.length;
+const moyenne = total ? avis.reduce((somme, a) => somme + a.note, 0) / total : 0;
+const moyenneTexte = moyenne.toFixed(1).replace('.', ',');
+const etoilesMoyenne = Math.round(moyenne);
+
+const message =
+  "Bonjour Samuel, voici mon avis sur ton travail.\n" +
+  'Ma note (de 1 à 5 étoiles) : \n' +
+  'Mon avis : \n' +
+  'Mon nom et ce que je fais : ';
+const lienAvis = `${contact.whatsapp}?text=${encodeURIComponent(message)}`;
+
+const initiales = (nom: string) =>
+  nom
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((mot) => mot[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+
+const cinq = [1, 2, 3, 4, 5];
+---
+
+<section id="avis" class="section section--creme avis" aria-labelledby="titre-avis">
+  <div class="conteneur grille">
+    <div class="gauche surgit">
+      <span class="guillemet" aria-hidden="true">“</span>
+      <p class="sur-titre">Avis</p>
+      <h2 id="titre-avis" class="section-titre">
+        Ce qu'ils pensent <span class="italique accent">de moi</span>
+      </h2>
+
+      {total > 0 && (
+        <p class="moyenne">
+          <span class="etoiles" role="img" aria-label={`Note moyenne : ${moyenneTexte} sur 5`}>
+            {cinq.map((n) => <span class={n <= etoilesMoyenne ? 'pleine' : 'vide'}>★</span>)}
+          </span>
+          <span><strong>{moyenneTexte} sur 5</strong>, d'après {total} avis</span>
+        </p>
+      )}
+
+      {total > 1 && (
+        <div class="visages" role="group" aria-label="Choisir l'avis à lire">
+          {avis.map((a, i) => (
+            <button type="button" class="visage" data-visage aria-pressed={i === 0 ? 'true' : 'false'} aria-label={`Lire l'avis de ${a.nom}`}>
+              {initiales(a.nom)}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+
+    <div class="droite surgit s1" data-avis-zone>
+      {total > 0 ? (
+        avis.map((a, i) => (
+          <figure class="temoignage" data-avis>
+            <div class="carte-avis">
+              <span class="etoiles" role="img" aria-label={`${a.note} sur 5`}>
+                {cinq.map((n) => <span class={n <= a.note ? 'pleine' : 'vide'}>★</span>)}
+              </span>
+              <blockquote class="citation">{a.texte}</blockquote>
+            </div>
+            <figcaption class="etiquette">
+              <strong>{a.nom}</strong>
+              <span>{a.role}</span>
+            </figcaption>
+          </figure>
+        ))
+      ) : (
+        <div class="temoignage">
+          <div class="carte-avis">
+            <p class="etoiles grandes" aria-hidden="true">
+              {cinq.map(() => <span class="pleine">★</span>)}
+            </p>
+            <p class="citation">Les premiers avis arrivent bientôt.</p>
+            <p class="invitation">
+              Vous avez travaillé avec moi ? Votre avis compte : il aide les prochaines
+              personnes à me faire confiance.
+            </p>
+          </div>
+        </div>
+      )}
+
+      <div class="action">
+        <a class="btn btn--nuit btn--fleche" href={lienAvis} target="_blank" rel="noopener noreferrer">
+          Donner mon avis
+          <span class="rond-fleche" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="m12 3 2.6 5.4 5.9.8-4.3 4.1 1 5.8L12 16.3 6.8 19l1-5.8L3.5 9.2l5.9-.8Z" />
+            </svg>
+          </span>
+        </a>
+        <p class="note-action">Votre avis m'arrive sur WhatsApp. Il est publié ici seulement avec votre accord.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Plusieurs avis : on en montre un seul à la fois, choisi avec les ronds.
+  const temoignages = [...document.querySelectorAll<HTMLElement>('[data-avis]')];
+  const visages = [...document.querySelectorAll<HTMLButtonElement>('[data-visage]')];
+
+  if (temoignages.length > 1) {
+    const montrer = (n: number) => {
+      temoignages.forEach((t, i) => { t.hidden = i !== n; });
+      visages.forEach((v, i) => v.setAttribute('aria-pressed', String(i === n)));
+    };
+    visages.forEach((v, i) => v.addEventListener('click', () => montrer(i)));
+    montrer(0);
+  }
+</script>
+
+<style>
+  /* Place en bas pour le bloc rouge « Contact » qui vient se poser par-dessus */
+  .avis {
+    padding-bottom: 104px;
+  }
+
+  @media (min-width: 768px) {
+    .avis {
+      padding-bottom: 160px;
+    }
+  }
+
+  .grille {
+    display: grid;
+    gap: 40px;
+  }
+
+  @media (min-width: 900px) {
+    .grille {
+      grid-template-columns: 5fr 7fr;
+      gap: 64px;
+      align-items: center;
+    }
+  }
+
+  .guillemet {
+    display: block;
+    height: 0.62em;
+    margin-bottom: 16px;
+    color: var(--rouge);
+    font-family: var(--police-serif);
+    font-size: 7rem;
+    line-height: 0.8;
+  }
+
+  .moyenne {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 14px;
+    margin: 4px 0 0;
+    font-size: 1.05rem;
+  }
+
+  .moyenne strong {
+    color: var(--texte);
+  }
+
+  .etoiles {
+    display: inline-flex;
+    gap: 2px;
+    font-size: 1.25rem;
+    line-height: 1;
+  }
+
+  /* Un or plus foncé, assez visible sur le fond clair */
+  .pleine {
+    color: #B8860B;
+  }
+
+  .vide {
+    color: rgba(18, 20, 28, 0.18);
+  }
+
+  .visages {
+    display: none;
+  }
+
+  :global(.js) .visages {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  .visage {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    border: 3px solid transparent;
+    border-radius: 50%;
+    background: var(--nuit-2);
+    color: #fff;
+    font: inherit;
+    font-weight: 800;
+    cursor: pointer;
+    opacity: 0.55;
+    transition: opacity 0.2s ease, border-color 0.2s ease;
+  }
+
+  .visage[aria-pressed="true"] {
+    border-color: var(--rouge);
+    opacity: 1;
+  }
+
+  .visage:active {
+    background: var(--or);
+    color: var(--nuit);
+  }
+
+  /* La carte penchée et son étiquette */
+
+  .temoignage {
+    margin: 0;
+  }
+
+  .temoignage[hidden] {
+    display: none;
+  }
+
+  .carte-avis {
+    padding: 28px 24px;
+    border: 1px solid rgba(18, 20, 28, 0.06);
+    border-radius: 24px;
+    background: #fff;
+    box-shadow: 0 30px 60px -28px rgba(18, 20, 28, 0.35);
+    transform: rotate(-1.5deg);
+  }
+
+  @media (min-width: 600px) {
+    .carte-avis {
+      padding: 36px 40px;
+    }
+  }
+
+  .citation {
+    margin: 12px 0 0;
+    color: var(--texte);
+    font-family: var(--police-serif);
+    font-size: clamp(1.5rem, 4.6vw, 2.1rem);
+    line-height: 1.25;
+  }
+
+  .grandes {
+    margin: 0;
+    font-size: 1.7rem;
+    letter-spacing: 4px;
+  }
+
+  .invitation {
+    margin: 14px 0 0;
+    max-width: 480px;
+  }
+
+  .etiquette {
+    display: flex;
+    flex-direction: column;
+    width: fit-content;
+    max-width: 90%;
+    margin: -12px 8px 0 auto;
+    padding: 12px 20px;
+    border-radius: 16px;
+    background: var(--nuit);
+    color: #fff;
+    transform: rotate(2deg);
+    position: relative;
+  }
+
+  .etiquette span {
+    color: var(--texte-clair);
+    font-family: var(--police-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .action {
+    margin-top: 36px;
+  }
+
+  .note-action {
+    margin: 12px 0 0;
+    font-size: 0.88rem;
+  }
+</style>

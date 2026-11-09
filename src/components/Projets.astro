@@ -1,0 +1,656 @@
+---
+// Mes projets : un paquet de cartes posées l'une sur l'autre.
+// La carte du dessus part sur le côté et passe derrière : avec les flèches,
+// en la faisant glisser du doigt, ou toute seule toutes les 6 secondes.
+// Le bouton fléché d'une carte ouvre sa fiche complète.
+import CarteProjet from './CarteProjet.astro';
+import { projets } from '../data/projets.js';
+import { contact } from '../data/contact.js';
+
+const total = projets.length;
+const deux = (n: number) => String(n).padStart(2, '0');
+const lienWhatsApp = (nom: string) =>
+  `${contact.whatsapp}?text=${encodeURIComponent(`Bonjour Samuel, je voudrais parler du projet ${nom}.`)}`;
+---
+
+<div id="projets" class="pile" data-pile role="region" aria-roledescription="carrousel" aria-labelledby="titre-projets">
+  <h2 id="titre-projets" class="visuellement-cache">Mes projets</h2>
+  <p class="visuellement-cache">
+    Utilisez les boutons « Projet précédent » et « Projet suivant », ou les flèches du
+    clavier, pour passer d'un projet à l'autre.
+  </p>
+
+  <div class="paquet">
+    {projets.map((p, i) => (
+      <CarteProjet
+        numero={i + 1}
+        total={total}
+        nom={p.nom}
+        type={p.type}
+        etat={p.etat}
+        image={p.image}
+        alt={p.alt}
+      />
+    ))}
+  </div>
+
+  <div class="commandes">
+    <button class="fleche" type="button" data-precedent aria-label="Projet précédent">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M19 12H5M11 6l-6 6 6 6" />
+      </svg>
+    </button>
+
+    <div class="lecture">
+      <button class="pause" type="button" data-pause aria-label="Mettre le défilement en pause">
+        <svg class="icone-pause" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <rect x="6" y="5" width="4" height="14" rx="1" />
+          <rect x="14" y="5" width="4" height="14" rx="1" />
+        </svg>
+        <svg class="icone-lecture" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M8 5.5v13a1 1 0 0 0 1.5.9l10-6.5a1 1 0 0 0 0-1.7l-10-6.5A1 1 0 0 0 8 5.5Z" />
+        </svg>
+      </button>
+      <span class="compteur" data-compteur>01 / {deux(total)}</span>
+      <span class="progression" aria-hidden="true"><span data-barre></span></span>
+    </div>
+
+    <button class="fleche" type="button" data-suivant aria-label="Projet suivant">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5 12h14M13 6l6 6-6 6" />
+      </svg>
+    </button>
+  </div>
+
+  <p class="visuellement-cache" aria-live="polite" data-annonce></p>
+
+  {projets.map((p, i) => (
+    <dialog id={`fiche-${i + 1}`} class="fiche" aria-labelledby={`fiche-titre-${i + 1}`}>
+      <div class="fiche-image">
+        <img src={p.image} alt={p.alt} width="640" height="400" loading="lazy" decoding="async" />
+        <button class="fermer" type="button" data-fermer aria-label="Fermer la fiche">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+            <path d="M6 6l12 12M18 6 6 18" />
+          </svg>
+        </button>
+      </div>
+      <div class="fiche-texte">
+        <p class="fiche-type">{p.type}</p>
+        <div class="fiche-haut">
+          <h3 id={`fiche-titre-${i + 1}`}>{p.nom}</h3>
+          <span class="fiche-etat">{p.etat}</span>
+        </div>
+        <p class="fiche-phrase">{p.phrase}</p>
+        <p class="fiche-role"><strong>Mon rôle :</strong> {p.role}</p>
+        <div class="fiche-actions">
+          {p.demo && <a class="btn btn--plein" href={p.demo}>Voir la démo</a>}
+          {!p.demo && p.bientot && <span class="bientot">{p.bientot}</span>}
+          <a class="btn btn--nuit" href={lienWhatsApp(p.nom)} target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3.5 20.5 5 16a8.5 8.5 0 1 1 3.2 3.2Z" />
+              <path d="M9.2 8.6c.2-.4.6-.5.9-.3l.9 1.6c.1.3 0 .6-.2.8l-.5.5a6 6 0 0 0 2.6 2.6l.5-.5c.2-.2.5-.3.8-.2l1.6.9c.3.2.4.6.2.9-.5 1-1.6 1.4-2.6 1a9 9 0 0 1-5.2-5.2c-.4-1 0-2 1-2.1Z" />
+            </svg>
+            En parler sur WhatsApp
+          </a>
+        </div>
+      </div>
+    </dialog>
+  ))}
+</div>
+
+<script>
+  // Le paquet de cartes : flèches, glisser du doigt, défilement tout seul, fiches.
+  const pile = document.querySelector<HTMLElement>('[data-pile]');
+
+  if (pile) {
+    const paquet = pile.querySelector<HTMLElement>('.paquet')!;
+    const cartes = [...pile.querySelectorAll<HTMLElement>('[data-carte]')];
+    const compteur = pile.querySelector<HTMLElement>('[data-compteur]')!;
+    const barre = pile.querySelector<HTMLElement>('[data-barre]')!;
+    const boutonPause = pile.querySelector<HTMLButtonElement>('[data-pause]')!;
+    const annonce = pile.querySelector<HTMLElement>('[data-annonce]')!;
+    const fiches = [...pile.querySelectorAll<HTMLDialogElement>('dialog')];
+
+    const DUREE = 6000; // une carte toutes les 6 secondes
+    const ENVOL = 420; // le temps que la carte du dessus s'envole (ms)
+    const POSITIONS = ['p0', 'p1', 'p2', 'p3'];
+    const total = cartes.length;
+    const mouvementReduit = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const deux = (n: number) => String(n).padStart(2, '0');
+
+    let ordre = cartes.map((_, i) => i); // ordre[0] = la carte du dessus
+    let enPause = mouvementReduit; // pas de défilement tout seul si l'on préfère moins de mouvement
+    let visible = false;
+    let survol = false;
+    let focusClavier = false;
+    let ficheOuverte = false;
+    let occupe = false;
+    let ecoule = 0;
+    let dernierInstant = 0;
+    let boucle = 0;
+
+    const dessus = () => cartes[ordre[0]];
+
+    function placer() {
+      const avaitLeFocus = cartes.some((c) => c.contains(document.activeElement));
+      ordre.forEach((indice, rang) => {
+        const carte = cartes[indice];
+        carte.classList.remove(...POSITIONS);
+        carte.classList.add(POSITIONS[Math.min(rang, POSITIONS.length - 1)]);
+        carte.inert = rang !== 0; // seules la carte du dessus et ses boutons sont utilisables
+      });
+      compteur.textContent = `${deux(ordre[0] + 1)} / ${deux(total)}`;
+      if (avaitLeFocus) dessus().querySelector<HTMLElement>('[data-ouvrir]')?.focus({ preventScroll: true });
+    }
+
+    function annoncer() {
+      annonce.textContent = `Projet ${dessus().getAttribute('aria-label')}`;
+    }
+
+    function remettreLeTemps() {
+      ecoule = 0;
+      barre.style.transform = 'scaleX(0)';
+    }
+
+    function suivant(sens: 'gauche' | 'droite' = 'gauche', parLaPersonne = true) {
+      if (occupe) return;
+      occupe = true;
+      const carte = dessus();
+      carte.style.transition = '';
+      carte.style.transform = '';
+      carte.classList.add(`part-${sens}`);
+      window.setTimeout(() => {
+        ordre.push(ordre.shift()!);
+        carte.classList.remove('part-gauche', 'part-droite');
+        placer();
+        if (parLaPersonne) annoncer();
+        occupe = false;
+      }, mouvementReduit ? 0 : ENVOL);
+      remettreLeTemps();
+    }
+
+    function precedent() {
+      if (occupe) return;
+      occupe = true;
+      const carte = cartes[ordre[total - 1]];
+      // La dernière carte se place hors du paquet, à droite, sans animation…
+      carte.style.transition = 'none';
+      carte.classList.remove(...POSITIONS);
+      carte.classList.add('part-droite');
+      void carte.offsetWidth;
+      // … puis revient se poser sur le dessus.
+      carte.style.transition = '';
+      carte.classList.remove('part-droite');
+      ordre.unshift(ordre.pop()!);
+      placer();
+      annoncer();
+      remettreLeTemps();
+      window.setTimeout(() => { occupe = false; }, mouvementReduit ? 0 : ENVOL);
+    }
+
+    // Défilement tout seul, avec la barre de progression
+    const peutDefiler = () =>
+      visible && !enPause && !survol && !focusClavier && !ficheOuverte && !document.hidden;
+
+    function avancer(instant: number) {
+      ecoule += instant - dernierInstant;
+      dernierInstant = instant;
+      if (ecoule >= DUREE) suivant('gauche', false);
+      barre.style.transform = `scaleX(${Math.min(ecoule / DUREE, 1)})`;
+      boucle = requestAnimationFrame(avancer);
+    }
+
+    function actualiser() {
+      const ok = peutDefiler();
+      if (ok && !boucle) {
+        dernierInstant = performance.now();
+        boucle = requestAnimationFrame(avancer);
+      } else if (!ok && boucle) {
+        cancelAnimationFrame(boucle);
+        boucle = 0;
+      }
+    }
+
+    function montrerPause() {
+      pile!.classList.toggle('en-pause', enPause);
+      boutonPause.setAttribute(
+        'aria-label',
+        enPause ? 'Relancer le défilement automatique' : 'Mettre le défilement en pause',
+      );
+    }
+
+    boutonPause.addEventListener('click', () => {
+      enPause = !enPause;
+      montrerPause();
+      actualiser();
+    });
+
+    pile.querySelector('[data-suivant]')!.addEventListener('click', () => suivant());
+    pile.querySelector('[data-precedent]')!.addEventListener('click', () => precedent());
+
+    pile.addEventListener('keydown', (e) => {
+      if (ficheOuverte) return;
+      if (e.key === 'ArrowRight') { e.preventDefault(); suivant(); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); precedent(); }
+    });
+
+    // Arrêt pendant que la souris est sur le paquet, ou que le clavier est dedans
+    paquet.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') { survol = true; actualiser(); } });
+    paquet.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') { survol = false; actualiser(); } });
+    pile.addEventListener('focusin', (e) => {
+      focusClavier = (e.target as HTMLElement).matches(':focus-visible');
+      actualiser();
+    });
+    pile.addEventListener('focusout', (e) => {
+      if (!pile.contains(e.relatedTarget as Node)) { focusClavier = false; actualiser(); }
+    });
+
+    // Faire glisser la carte du dessus avec le doigt (ou la souris)
+    let depart: { x: number; y: number; id: number } | null = null;
+    let ecart = 0;
+    let glisse = false;
+
+    paquet.addEventListener('pointerdown', (e) => {
+      glisse = false;
+      if (occupe || e.button !== 0 || !dessus().contains(e.target as Node)) return;
+      depart = { x: e.clientX, y: e.clientY, id: e.pointerId };
+      ecart = 0;
+    });
+
+    paquet.addEventListener('pointermove', (e) => {
+      if (!depart || e.pointerId !== depart.id) return;
+      ecart = e.clientX - depart.x;
+      const vertical = e.clientY - depart.y;
+      const carte = dessus();
+      if (!glisse) {
+        if (Math.abs(ecart) < 8) return;
+        if (Math.abs(vertical) > Math.abs(ecart)) { depart = null; return; } // on fait défiler la page
+        glisse = true;
+        try { carte.setPointerCapture(e.pointerId); } catch { /* le glissement marche quand même */ }
+        carte.style.transition = 'none';
+      }
+      carte.style.transform = `translateX(${ecart}px) rotate(${ecart / 22}deg)`;
+    });
+
+    const lacher = () => {
+      if (!depart) return;
+      depart = null;
+      if (!glisse) return;
+      if (Math.abs(ecart) > 80) {
+        suivant(ecart < 0 ? 'gauche' : 'droite');
+      } else {
+        const carte = dessus();
+        carte.style.transition = '';
+        carte.style.transform = '';
+      }
+    };
+    paquet.addEventListener('pointerup', lacher);
+    paquet.addEventListener('pointercancel', lacher);
+
+    // Après un glissement, le clic qui suit n'ouvre pas la fiche
+    paquet.addEventListener('click', (e) => {
+      if (glisse) { e.preventDefault(); e.stopPropagation(); glisse = false; }
+    }, true);
+
+    // Les fiches complètes
+    let dernierBouton: HTMLElement | null = null;
+    pile.addEventListener('click', (e) => {
+      const bouton = (e.target as HTMLElement).closest<HTMLElement>('[data-ouvrir]');
+      if (!bouton) return;
+      const fiche = document.getElementById(bouton.dataset.ouvrir!) as HTMLDialogElement | null;
+      if (!fiche || typeof fiche.showModal !== 'function') return;
+      dernierBouton = bouton;
+      fiche.showModal();
+      ficheOuverte = true;
+      actualiser();
+    });
+
+    fiches.forEach((fiche) => {
+      fiche.addEventListener('click', (e) => {
+        const cible = e.target as HTMLElement;
+        if (cible === fiche || cible.closest('[data-fermer]')) fiche.close();
+      });
+      fiche.addEventListener('close', () => {
+        ficheOuverte = false;
+        actualiser();
+        dernierBouton?.focus({ preventScroll: true });
+      });
+    });
+
+    // Ne défile que lorsque le paquet est à l'écran et la page ouverte
+    new IntersectionObserver(
+      ([entree]) => { visible = entree.isIntersecting; actualiser(); },
+      { threshold: 0.35 },
+    ).observe(paquet);
+    document.addEventListener('visibilitychange', actualiser);
+
+    placer();
+    montrerPause();
+    actualiser();
+  }
+</script>
+
+<style>
+  .pile {
+    position: relative;
+    width: 100%;
+    max-width: 440px;
+    margin: 0 auto;
+    scroll-margin-top: calc(var(--hauteur-entete) + 16px);
+  }
+
+  @media (min-width: 900px) {
+    .pile {
+      max-width: 620px;
+      margin-right: 0;
+    }
+  }
+
+  /* Sans JavaScript : les cartes sont simplement l'une sous l'autre */
+  .paquet {
+    display: grid;
+    gap: 20px;
+  }
+
+  /* Avec JavaScript : les cartes sont empilées au même endroit */
+  :global(.js) .paquet {
+    gap: 0;
+    padding-top: 52px;
+  }
+
+  :global(.js) .paquet > :global(.carte) {
+    grid-area: 1 / 1;
+    transition: transform 0.7s var(--courbe), opacity 0.45s ease;
+    will-change: transform;
+  }
+
+  :global(.js) .paquet > :global(.p0) {
+    z-index: 4;
+    transform: none;
+  }
+
+  :global(.js) .paquet > :global(.p1) {
+    z-index: 3;
+    transform: translateY(-26px) rotate(-2.5deg) scale(0.95);
+  }
+
+  :global(.js) .paquet > :global(.p2) {
+    z-index: 2;
+    transform: translateY(-50px) rotate(3deg) scale(0.9);
+  }
+
+  :global(.js) .paquet > :global(.p3) {
+    z-index: 1;
+    transform: translateY(-50px) scale(0.85);
+    opacity: 0;
+  }
+
+  /* La carte du dessus s'envole sur le côté */
+  :global(.js) .paquet > :global(.part-gauche) {
+    z-index: 5;
+    transform: translateX(-120%) rotate(-16deg);
+    opacity: 0;
+  }
+
+  :global(.js) .paquet > :global(.part-droite) {
+    z-index: 5;
+    transform: translateX(120%) rotate(16deg);
+    opacity: 0;
+  }
+
+  /* Les commandes sous le paquet */
+  .commandes {
+    display: none;
+  }
+
+  :global(.js) .commandes {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 28px;
+  }
+
+  .fleche {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border: 1px solid rgba(18, 20, 28, 0.18);
+    border-radius: 50%;
+    background: var(--creme);
+    color: var(--nuit);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color 0.3s var(--courbe), color 0.3s var(--courbe), border-color 0.3s var(--courbe);
+  }
+
+  .fleche:hover {
+    border-color: var(--nuit);
+    background: var(--nuit);
+    color: #fff;
+  }
+
+  .fleche:active {
+    border-color: var(--or);
+    background: var(--or);
+    color: var(--nuit);
+  }
+
+  .fleche svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .lecture {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 52px;
+    padding: 0 18px 0 4px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--nuit);
+    color: #fff;
+    font-family: var(--police-mono);
+    font-size: 0.82rem;
+    letter-spacing: 0.12em;
+  }
+
+  .pause {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .pause:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  .pause:active {
+    background: var(--or);
+    color: var(--nuit);
+  }
+
+  .pause:focus-visible {
+    outline-color: var(--or);
+    outline-offset: -3px;
+  }
+
+  .pause svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .icone-lecture,
+  .en-pause .icone-pause {
+    display: none;
+  }
+
+  .en-pause .icone-lecture {
+    display: block;
+  }
+
+  .progression {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  .progression span {
+    display: block;
+    height: 100%;
+    background: var(--or);
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+
+  /* La fiche complète d'un projet */
+  .fiche {
+    width: min(640px, calc(100% - 32px));
+    max-height: calc(100dvh - 32px);
+    padding: 0;
+    overflow: auto;
+    border: 0;
+    border-radius: 24px;
+    background: var(--creme);
+    color: var(--gris);
+    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.45);
+  }
+
+  .fiche[open] {
+    animation: entree-fiche 0.5s var(--courbe);
+  }
+
+  @keyframes entree-fiche {
+    from {
+      opacity: 0;
+      transform: translateY(24px) scale(0.97);
+    }
+  }
+
+  .fiche::backdrop {
+    background: rgba(18, 20, 28, 0.75);
+  }
+
+  .fiche-image {
+    position: relative;
+    background: var(--nuit);
+  }
+
+  .fiche-image img {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+  }
+
+  .fermer {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(18, 20, 28, 0.75);
+    color: #fff;
+    cursor: pointer;
+  }
+
+  .fermer:hover {
+    background: var(--nuit);
+  }
+
+  .fermer:active {
+    background: var(--or);
+    color: var(--nuit);
+  }
+
+  .fermer svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .fiche-texte {
+    padding: 24px 22px 26px;
+  }
+
+  @media (min-width: 600px) {
+    .fiche-texte {
+      padding: 28px 32px 32px;
+    }
+  }
+
+  .fiche-type {
+    margin: 0 0 6px;
+    color: var(--rouge);
+    font-family: var(--police-mono);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .fiche-haut {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 14px;
+    margin-bottom: 14px;
+  }
+
+  .fiche-haut h3 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+
+  .fiche-etat {
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: var(--or-clair);
+    color: var(--or-fonce);
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+
+  .fiche-phrase {
+    color: var(--texte);
+    font-size: 1.08rem;
+  }
+
+  .fiche-role strong {
+    color: var(--rouge);
+  }
+
+  .fiche-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-top: 22px;
+  }
+
+  .bientot {
+    padding: 8px 14px;
+    border: 1px dashed var(--rouge-pale);
+    border-radius: 999px;
+    color: var(--rouge);
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+</style>

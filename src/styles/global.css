@@ -1,0 +1,404 @@
+/* Styles communs à tout le site : couleurs, textes, boutons.
+   Palette « Nuit et rouge » : pour changer les couleurs, il suffit de modifier ce bloc. */
+
+:root {
+  --nuit: #12141C;           /* haut de page, sections sombres */
+  --nuit-2: #1C1F2B;         /* cartes posées sur la nuit */
+  --rouge: #C62828;          /* le même rouge que Sangona : boutons, mots en couleur */
+  --rouge-fonce: #A31F1F;    /* bouton survolé */
+  --rouge-doux: #FF8A80;     /* petits textes rouges sur fond sombre */
+  --rouge-clair: #FDECEA;
+  --rouge-pale: #F8D3CF;
+  --or: #F5B841;             /* effet de clic, touches dorées */
+  --or-clair: #FFF1D0;
+  --or-fonce: #7A4F00;
+  --bordeaux: #4A0F14;       /* bas de page */
+  --creme: #FFF7F0;          /* fond clair principal */
+  --sable: #F6ECE2;          /* fond clair un peu plus foncé */
+  --whatsapp: #1DA851;       /* vert WhatsApp (assez foncé pour l'icône blanche) */
+  --texte: #12141C;
+  --gris: #4A4D5A;
+  --texte-clair: #C9CCD6;    /* texte sur fond sombre */
+  --trait: #EDE3DA;
+  --rayon: 18px;
+  --rayon-grand: 28px;
+  --ombre: 0 1px 2px rgba(18, 20, 28, 0.05), 0 12px 32px rgba(18, 20, 28, 0.08);
+  --largeur: 1160px;
+  --hauteur-entete: 64px;
+  --courbe: cubic-bezier(0.16, 1, 0.3, 1); /* mouvement rapide puis doux */
+  /* Polices du système : rien à télécharger, plus rapide avec une connexion lente. */
+  --police: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --police-serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, "Noto Serif", serif;
+  --police-mono: ui-monospace, "Cascadia Mono", "Segoe UI Mono", "Roboto Mono", Menlo, Consolas, monospace;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Quand une fiche de projet est ouverte, la page derrière ne bouge plus */
+html:has(dialog[open]) {
+  overflow: hidden;
+}
+
+body {
+  margin: 0;
+  font-family: var(--police);
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--texte);
+  background: var(--creme);
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: var(--rouge);
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.15;
+  margin: 0 0 0.5em;
+  color: var(--texte);
+  letter-spacing: -0.02em;
+}
+
+p {
+  margin: 0 0 1em;
+}
+
+:focus-visible {
+  outline: 3px solid var(--rouge);
+  outline-offset: 3px;
+}
+
+/* Le mot en couleur dans les titres */
+.accent {
+  color: var(--rouge);
+}
+
+/* Le mot penché, en police à empattements */
+.italique {
+  font-family: var(--police-serif);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+/* Caché à l'écran, mais lu par les lecteurs d'écran */
+.visuellement-cache {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Mise en page */
+
+.conteneur {
+  width: 100%;
+  max-width: var(--largeur);
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+@media (min-width: 768px) {
+  .conteneur {
+    padding: 0 32px;
+  }
+}
+
+.section {
+  padding: 72px 0;
+  color: var(--gris);
+  scroll-margin-top: var(--hauteur-entete);
+}
+
+@media (min-width: 768px) {
+  .section {
+    padding: 112px 0;
+  }
+}
+
+.section--creme {
+  background: var(--creme);
+}
+
+.section--sable {
+  background: var(--sable);
+}
+
+/* Section sur fond sombre */
+.section--nuit {
+  background: var(--nuit);
+  color: var(--texte-clair);
+}
+
+.section--nuit h2,
+.section--nuit h3 {
+  color: #fff;
+}
+
+.section--nuit .accent {
+  color: var(--rouge-doux);
+}
+
+/* Petite étiquette au-dessus des titres : lettres espacées et un point rouge */
+.sur-titre {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 14px;
+  color: var(--gris);
+  font-family: var(--police-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.sur-titre::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--rouge);
+}
+
+.section--nuit .sur-titre {
+  color: var(--texte-clair);
+}
+
+.section--nuit .sur-titre::before {
+  background: var(--rouge-doux);
+}
+
+.section-titre {
+  font-size: clamp(2rem, 7vw, 3.2rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+}
+
+.section-intro {
+  max-width: 620px;
+  font-size: 1.05rem;
+}
+
+/* Boutons */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6em;
+  min-height: 52px;
+  padding: 0 24px;
+  border: 2px solid var(--rouge);
+  border-radius: 999px;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.btn svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* Bouton rouge plein */
+.btn--plein {
+  background: var(--rouge);
+  color: #fff;
+}
+
+.btn--plein:hover {
+  background: var(--rouge-fonce);
+  border-color: var(--rouge-fonce);
+}
+
+/* Bouton nuit (le bouton principal sur fond clair ou rouge) */
+.btn--nuit {
+  border-color: var(--nuit);
+  background: var(--nuit);
+  color: #fff;
+}
+
+.btn--nuit:hover {
+  border-color: var(--nuit-2);
+  background: var(--nuit-2);
+}
+
+/* Bouton à contour blanc, sur fond sombre */
+.btn--clair {
+  background: transparent;
+  border-color: #fff;
+  color: #fff;
+}
+
+.btn--clair:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Bouton avec un rond fléché à droite */
+.btn--fleche {
+  padding-right: 6px;
+}
+
+.rond-fleche {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--rouge);
+  color: #fff;
+  transition: transform 0.3s var(--courbe);
+}
+
+.btn--fleche:hover .rond-fleche {
+  transform: rotate(45deg);
+}
+
+.rond-fleche svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* L'effet de clic : le bouton devient doré quand on appuie */
+.btn:active {
+  background: var(--or);
+  border-color: var(--or);
+  color: var(--nuit);
+  transform: scale(0.97);
+}
+
+/* Lien pour aller directement au contenu (clavier, lecteurs d'écran) */
+
+.lien-evitement {
+  position: absolute;
+  top: 8px;
+  left: -9999px;
+  z-index: 100;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: var(--ombre);
+}
+
+.lien-evitement:focus {
+  left: 16px;
+}
+
+/* Entrée douce des éléments du haut de page */
+
+.apparait {
+  animation: monter 0.8s var(--courbe) both;
+}
+
+/* Les éléments apparaissent l'un après l'autre */
+.d1 { animation-delay: 120ms; }
+.d2 { animation-delay: 240ms; }
+.d3 { animation-delay: 360ms; }
+.d4 { animation-delay: 480ms; }
+.d5 { animation-delay: 600ms; }
+
+@keyframes monter {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+/* Les mots du grand titre montent un par un, comme sortis d'une fente */
+
+.mot {
+  display: inline-block;
+  overflow: hidden;
+  padding: 0 0.06em 0.12em;
+  margin: 0 -0.06em -0.12em;
+  vertical-align: bottom;
+}
+
+.mot > span {
+  display: inline-block;
+  animation: sortir 0.9s var(--courbe) both;
+}
+
+.r0 > span { animation-delay: 80ms; }
+.r1 > span { animation-delay: 150ms; }
+.r2 > span { animation-delay: 220ms; }
+.r3 > span { animation-delay: 290ms; }
+.r4 > span { animation-delay: 360ms; }
+.r5 > span { animation-delay: 430ms; }
+.r6 > span { animation-delay: 500ms; }
+.r7 > span { animation-delay: 570ms; }
+.r8 > span { animation-delay: 640ms; }
+
+@keyframes sortir {
+  from {
+    transform: translateY(110%);
+  }
+}
+
+/* Les blocs apparaissent en douceur quand on arrive dessus (seulement si JavaScript marche) */
+
+.js .surgit:not(.vu) {
+  opacity: 0;
+}
+
+.js .surgit.vu {
+  animation: surgir 0.9s var(--courbe) both;
+}
+
+.js .surgit.s1 { animation-delay: 100ms; }
+.js .surgit.s2 { animation-delay: 200ms; }
+.js .surgit.s3 { animation-delay: 300ms; }
+
+@keyframes surgir {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+}
+
+/* Pour les personnes qui préfèrent moins de mouvement */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .js .surgit:not(.vu) {
+    opacity: 1;
+  }
+}

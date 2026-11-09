@@ -1,0 +1,223 @@
+---
+// Haut de page : qui je suis, en une phrase, quelques chiffres vrais,
+// les boutons pour me contacter et, à côté, le paquet de cartes de mes projets.
+import Projets from './Projets.astro';
+import { projets } from '../data/projets.js';
+import { contact } from '../data/contact.js';
+
+// Les mots du titre montent un par un : on les découpe ici.
+const nom = ['Samuel', 'Mukadi'];
+const role = [
+  { mot: 'Chef' },
+  { mot: 'de' },
+  { mot: 'projet' },
+  { mot: 'digital' },
+  { mot: '&', classe: 'et' },
+  { mot: 'orchestrateur', classe: 'italique accent' },
+  { mot: "d'IA", classe: 'italique accent' },
+];
+---
+
+<section id="accueil" class="accueil" aria-labelledby="titre-accueil">
+  <div class="conteneur grille">
+    <div class="texte">
+      <p class="bonjour apparait">Bonjour, je suis</p>
+
+      <h1 id="titre-accueil">
+        {nom.map((mot, i) => (
+          <>
+            <span class={`mot r${i}`}><span>{mot}</span></span>{' '}
+          </>
+        ))}
+      </h1>
+
+      <p class="role">
+        {role.map((m, i) => (
+          <>
+            <span class={`mot r${i + 2}`}><span class={m.classe}>{m.mot}</span></span>{' '}
+          </>
+        ))}
+      </p>
+
+      <p class="phrase apparait d3">
+        Je conçois des produits numériques pour la RDC et j'orchestre une équipe
+        d'IA pour les construire.
+      </p>
+
+      <ul class="pastilles apparait d4">
+        <li><strong>{projets.length}</strong> projets</li>
+        <li><strong>2</strong> IA dans l'équipe</li>
+        <li>Pour la <strong>RDC</strong></li>
+      </ul>
+
+      <div class="boutons apparait d5">
+        <a class="btn btn--nuit btn--fleche" href="#contact">
+          Me contacter
+          <span class="rond-fleche" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M7 17 17 7M8 7h9v9" />
+            </svg>
+          </span>
+        </a>
+        <a class="whatsapp" href={contact.whatsapp} target="_blank" rel="noopener noreferrer" aria-label="Écrire sur WhatsApp">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3.5 20.5 5 16a8.5 8.5 0 1 1 3.2 3.2Z" />
+            <path d="M9.2 8.6c.2-.4.6-.5.9-.3l.9 1.6c.1.3 0 .6-.2.8l-.5.5a6 6 0 0 0 2.6 2.6l.5-.5c.2-.2.5-.3.8-.2l1.6.9c.3.2.4.6.2.9-.5 1-1.6 1.4-2.6 1a9 9 0 0 1-5.2-5.2c-.4-1 0-2 1-2.1Z" />
+          </svg>
+        </a>
+      </div>
+    </div>
+
+    <div class="cote apparait d2">
+      <Projets />
+    </div>
+  </div>
+</section>
+
+<style>
+  .accueil {
+    padding: 36px 0 64px;
+    overflow-x: clip; /* les cartes qui s'envolent ne font pas déborder la page */
+    background:
+      radial-gradient(60% 45% at 92% 18%, rgba(198, 40, 40, 0.12) 0, transparent 70%),
+      radial-gradient(40% 35% at 0% 0%, rgba(245, 184, 65, 0.16) 0, transparent 70%),
+      var(--creme);
+    color: var(--gris);
+    scroll-margin-top: var(--hauteur-entete);
+  }
+
+  .grille {
+    display: grid;
+    gap: 40px;
+    align-items: center;
+  }
+
+  @media (min-width: 900px) {
+    .accueil {
+      display: flex;
+      align-items: center;
+      min-height: calc(100svh - var(--hauteur-entete));
+      padding: 40px 0 56px;
+    }
+
+    .grille {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+      gap: 56px;
+    }
+  }
+
+  .bonjour {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 12px;
+    color: var(--gris);
+    font-family: var(--police-mono);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .bonjour::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--rouge);
+    box-shadow: 0 0 0 4px rgba(198, 40, 40, 0.15);
+  }
+
+  h1 {
+    margin: 0 0 6px;
+    font-size: clamp(2.9rem, 12vw, 5rem);
+    font-weight: 800;
+    line-height: 0.98;
+    letter-spacing: -0.045em;
+  }
+
+  .role {
+    margin: 0 0 20px;
+    color: var(--texte);
+    font-size: clamp(1.55rem, 5.6vw, 2.35rem);
+    font-weight: 700;
+    line-height: 1.12;
+    letter-spacing: -0.03em;
+  }
+
+  .role .italique {
+    font-weight: 500;
+  }
+
+  .et {
+    color: var(--gris);
+  }
+
+  .phrase {
+    max-width: 520px;
+    margin-bottom: 24px;
+    font-size: 1.1rem;
+  }
+
+  .pastilles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 28px;
+    padding: 0;
+    list-style: none;
+  }
+
+  .pastilles li {
+    padding: 8px 16px;
+    border: 1px solid rgba(18, 20, 28, 0.12);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.6);
+    font-size: 0.95rem;
+  }
+
+  .pastilles strong {
+    color: var(--texte);
+    font-weight: 800;
+  }
+
+  .boutons {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .boutons .btn {
+    min-height: 56px;
+    padding-left: 26px;
+  }
+
+  .whatsapp {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--whatsapp);
+    color: #fff;
+    box-shadow: 0 10px 24px -8px rgba(29, 168, 81, 0.7);
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.3s var(--courbe), background-color 0.2s ease;
+  }
+
+  .whatsapp:hover {
+    transform: translateY(-2px);
+  }
+
+  .whatsapp:active {
+    background: var(--or);
+    color: var(--nuit);
+    transform: scale(0.95);
+  }
+
+  .whatsapp svg {
+    width: 26px;
+    height: 26px;
+  }
+</style>

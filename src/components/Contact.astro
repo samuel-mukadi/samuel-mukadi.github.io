@@ -1,0 +1,393 @@
+---
+// Contact (bloc rouge aux coins arrondis, posé sur la section d'avant).
+// La personne choisit ce qu'elle veut et pour quand : le bouton WhatsApp
+// s'ouvre avec un message déjà écrit. Rien n'est envoyé sans elle.
+// Le numéro n'est jamais écrit en clair sur la page.
+import { contact } from '../data/contact.js';
+
+const { whatsapp, email, github } = contact;
+
+const besoins = [
+  { nom: 'Une idée', message: "j'ai une idée de projet", icone: 'idee' },
+  { nom: 'Une question', message: "j'ai une question", icone: 'question' },
+  { nom: 'Une collaboration', message: 'je voudrais proposer une collaboration', icone: 'equipe' },
+  { nom: 'Autre chose', message: 'je voudrais échanger', icone: 'bulle' },
+];
+
+const delais = [
+  { nom: 'Urgent', message: "C'est urgent." },
+  { nom: 'Ce mois-ci', message: "C'est pour ce mois-ci." },
+  { nom: 'Dans 2 à 3 mois', message: "C'est pour dans 2 à 3 mois." },
+  { nom: 'Pas pressé', message: "Ce n'est pas pressé." },
+];
+---
+
+<section id="contact" class="contact" aria-labelledby="titre-contact">
+  <div class="conteneur grille">
+    <div class="gauche surgit">
+      <p class="sur-titre">Contact</p>
+      <h2 id="titre-contact">
+        Parlons de <span class="italique souligne">votre projet</span>
+      </h2>
+      <p class="intro">
+        Une idée, une question ou une collaboration ? Écrivez-moi, je vous réponds
+        avec plaisir.
+      </p>
+    </div>
+
+    <div class="droite surgit s1" data-choix>
+      <fieldset>
+        <legend class="sur-titre">C'est pour…</legend>
+        <div class="tuiles">
+          {besoins.map((b) => (
+            <label class="tuile">
+              <input type="radio" name="besoin" value={b.message} />
+              <span class="tuile-nom">{b.nom}</span>
+              <span class="coche" aria-hidden="true"></span>
+              <span aria-hidden="true">
+                {b.icone === 'idee' && (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.4 1 1.1 1 1.8v.3h5v-.3c0-.7.4-1.4 1-1.8A6 6 0 0 0 12 3Z" />
+                  </svg>
+                )}
+                {b.icone === 'question' && (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="9" />
+                    <path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6M12 17h.01" />
+                  </svg>
+                )}
+                {b.icone === 'equipe' && (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="9" cy="8" r="3" />
+                    <circle cx="17" cy="9" r="2.5" />
+                    <path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M15.5 14.2c.5-.1 1-.2 1.5-.2 2.8 0 5 2.2 5 5" />
+                  </svg>
+                )}
+                {b.icone === 'bulle' && (
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.4A8 8 0 1 1 21 12Z" />
+                    <path d="M8.5 12h.01M12 12h.01M15.5 12h.01" />
+                  </svg>
+                )}
+              </span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend class="sur-titre">Pour quand ?</legend>
+        <div class="puces">
+          {delais.map((d) => (
+            <label class="puce">
+              <input type="radio" name="delai" value={d.message} />
+              <span>{d.nom}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+
+      <div class="envoi">
+        <a class="btn btn--nuit btn--fleche" href={whatsapp} data-lien-whatsapp target="_blank" rel="noopener noreferrer">
+          Envoyer sur WhatsApp
+          <span class="rond-fleche rond-vert" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3.5 20.5 5 16a8.5 8.5 0 1 1 3.2 3.2Z" />
+              <path d="M9.2 8.6c.2-.4.6-.5.9-.3l.9 1.6c.1.3 0 .6-.2.8l-.5.5a6 6 0 0 0 2.6 2.6l.5-.5c.2-.2.5-.3.8-.2l1.6.9c.3.2.4.6.2.9-.5 1-1.6 1.4-2.6 1a9 9 0 0 1-5.2-5.2c-.4-1 0-2 1-2.1Z" />
+            </svg>
+          </span>
+        </a>
+        <a class="lien-email" href={`mailto:${email}`} data-lien-email>ou par e-mail</a>
+      </div>
+
+      <p class="apercu" data-apercu aria-live="polite"></p>
+
+      <p class="adresse">
+        Mon e-mail : {email}<span aria-hidden="true">&nbsp;·&nbsp;</span><a href={github} target="_blank" rel="noopener noreferrer">Mon GitHub</a>
+      </p>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Prépare le message WhatsApp (et l'e-mail) selon les choix de la personne.
+  const choix = document.querySelector<HTMLElement>('[data-choix]');
+
+  if (choix) {
+    const lienWhatsApp = choix.querySelector<HTMLAnchorElement>('[data-lien-whatsapp]')!;
+    const lienEmail = choix.querySelector<HTMLAnchorElement>('[data-lien-email]')!;
+    const apercu = choix.querySelector<HTMLElement>('[data-apercu]')!;
+    const baseWhatsApp = lienWhatsApp.href;
+    const baseEmail = lienEmail.href;
+
+    const valeur = (nom: string) =>
+      choix.querySelector<HTMLInputElement>(`input[name="${nom}"]:checked`)?.value ?? '';
+
+    const preparer = () => {
+      const besoin = valeur('besoin');
+      const delai = valeur('delai');
+      if (!besoin && !delai) return;
+      const message = `Bonjour Samuel${besoin ? `, ${besoin}.` : '.'}${delai ? ` ${delai}` : ''}`;
+      lienWhatsApp.href = `${baseWhatsApp}?text=${encodeURIComponent(message)}`;
+      lienEmail.href =
+        `${baseEmail}?subject=${encodeURIComponent('Mon projet')}&body=${encodeURIComponent(message)}`;
+      apercu.textContent = `Votre message : « ${message} »`;
+    };
+
+    choix.addEventListener('change', preparer);
+  }
+</script>
+
+<style>
+  .contact {
+    position: relative;
+    z-index: 1;
+    margin-top: -40px;
+    padding: 72px 0 80px;
+    border-radius: 32px 32px 0 0;
+    background:
+      radial-gradient(55% 45% at 100% 0%, rgba(245, 184, 65, 0.28) 0, transparent 70%),
+      radial-gradient(45% 40% at 0% 100%, rgba(74, 15, 20, 0.45) 0, transparent 70%),
+      var(--rouge);
+    color: #fff;
+    scroll-margin-top: var(--hauteur-entete);
+  }
+
+  @media (min-width: 768px) {
+    .contact {
+      margin-top: -56px;
+      padding: 112px 0 120px;
+      border-radius: 44px 44px 0 0;
+    }
+  }
+
+  .grille {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 40px;
+  }
+
+  @media (min-width: 900px) {
+    .grille {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      gap: 64px;
+    }
+  }
+
+  .sur-titre {
+    color: #fff;
+  }
+
+  .sur-titre::before {
+    background: var(--or);
+  }
+
+  h2 {
+    color: #fff;
+    font-size: clamp(2.4rem, 9vw, 4rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.04em;
+  }
+
+  .souligne {
+    font-weight: 500;
+    text-decoration: underline;
+    text-decoration-color: var(--or);
+    text-decoration-thickness: 3px;
+    text-underline-offset: 10px;
+  }
+
+  .intro {
+    max-width: 420px;
+    font-size: 1.1rem;
+  }
+
+  fieldset {
+    margin: 0 0 28px;
+    padding: 0;
+    border: 0;
+  }
+
+  legend {
+    padding: 0;
+  }
+
+  /* Les tuiles à choisir */
+  .tuiles {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .tuile {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 20px;
+    min-height: 132px;
+    padding: 16px;
+    border: 1px solid rgba(0, 0, 0, 0.14);
+    border-radius: 20px;
+    background: rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.25s var(--courbe);
+  }
+
+  @media (min-width: 600px) {
+    .tuile {
+      min-height: 150px;
+      padding: 20px;
+    }
+  }
+
+  .tuile:hover {
+    background: rgba(0, 0, 0, 0.18);
+  }
+
+  .tuile:active {
+    transform: scale(0.97);
+  }
+
+  .tuile:has(input:checked) {
+    border-color: var(--nuit);
+    background: var(--nuit);
+  }
+
+  .tuile:has(input:focus-visible),
+  .puce:has(input:focus-visible) {
+    outline: 3px solid #fff;
+    outline-offset: 3px;
+  }
+
+  /* Le vrai bouton radio est caché, mais reste utilisable au clavier */
+  .tuile input,
+  .puce input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+  }
+
+  .tuile-nom {
+    padding-right: 28px;
+    font-size: clamp(1rem, 4.4vw, 1.1rem);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    /* Sur les très petits écrans, un mot trop long se coupe avec un tiret */
+    -webkit-hyphens: auto;
+    hyphens: auto;
+  }
+
+  .coche {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 22px;
+    height: 22px;
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+  }
+
+  .tuile:has(input:checked) .coche {
+    border-color: var(--or);
+    background: var(--or);
+    box-shadow: inset 0 0 0 4px var(--nuit);
+  }
+
+  .tuile svg {
+    width: 32px;
+    height: 32px;
+  }
+
+  /* Les petites pastilles « Pour quand ? » */
+  .puces {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .puce {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-height: 46px;
+    padding: 0 18px;
+    border: 1.5px solid rgba(255, 255, 255, 0.5);
+    border-radius: 999px;
+    font-weight: 700;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .puce:hover {
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  .puce:has(input:checked) {
+    border-color: #fff;
+    background: #fff;
+    color: var(--rouge);
+  }
+
+  /* L'envoi */
+  .envoi {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 20px;
+  }
+
+  .envoi .btn {
+    min-height: 56px;
+    padding-left: 26px;
+  }
+
+  .rond-vert {
+    background: var(--whatsapp);
+  }
+
+  .lien-email {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: #fff;
+    font-weight: 700;
+    text-underline-offset: 4px;
+  }
+
+  .lien-email:active {
+    color: var(--or);
+  }
+
+  .apercu {
+    margin: 18px 0 0;
+    padding: 12px 16px;
+    border-radius: 14px;
+    background: rgba(0, 0, 0, 0.14);
+    font-size: 0.95rem;
+  }
+
+  .apercu:empty {
+    display: none;
+  }
+
+  .adresse {
+    margin: 20px 0 0;
+    font-size: 0.9rem;
+    overflow-wrap: anywhere;
+  }
+
+  .adresse a {
+    color: #fff;
+    font-weight: 700;
+  }
+
+  .contact :focus-visible {
+    outline-color: #fff;
+  }
+</style>

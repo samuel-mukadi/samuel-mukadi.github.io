@@ -1,0 +1,174 @@
+---
+// Mes 4 compétences (fond sombre). La dernière est affichée « en apprentissage ».
+const competences = [
+  {
+    titre: 'Gestion de projet et conception',
+    texte: 'Vision du produit, parcours des utilisateurs, maquettes, feuille de route.',
+    icone: 'plan',
+  },
+  {
+    titre: "Orchestration d'IA",
+    texte: 'Répartir le travail entre Claude (construction) et Codex (contrôle), avec des règles claires.',
+    icone: 'ia',
+  },
+  {
+    titre: 'Git et GitHub',
+    texte: 'Dépôts, branches, demandes de fusion et revues avant chaque validation.',
+    icone: 'git',
+  },
+  {
+    titre: 'Bases du web',
+    texte: 'HTML, CSS et JavaScript.',
+    icone: 'web',
+    apprentissage: true,
+  },
+];
+---
+
+<section id="competences" class="section section--nuit" aria-labelledby="titre-competences">
+  <div class="conteneur">
+    <div class="surgit">
+      <p class="sur-titre">Compétences</p>
+      <h2 id="titre-competences" class="section-titre">
+        Ce que <span class="italique accent">j'apporte</span> à un projet
+      </h2>
+    </div>
+
+    <ul class="cartes">
+      {competences.map((c, i) => (
+        <li class={`carte surgit s${i % 4}`}>
+          <div class="haut">
+            <span class="numero">{String(i + 1).padStart(2, '0')}</span>
+            {c.apprentissage && <span class="badge">En apprentissage</span>}
+          </div>
+          <h3>{c.titre}</h3>
+          <p>{c.texte}</p>
+          <span class="icone" aria-hidden="true">
+            {c.icone === 'plan' && (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="16" rx="2" />
+                <path d="M3 9h18M8 13h4M8 16h7" />
+              </svg>
+            )}
+            {c.icone === 'ia' && (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="5" r="2.5" />
+                <circle cx="5" cy="18" r="2.5" />
+                <circle cx="19" cy="18" r="2.5" />
+                <path d="M11 7.3 6.2 15.8M13 7.3l4.8 8.5M7.5 18h9" />
+              </svg>
+            )}
+            {c.icone === 'git' && (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="6" cy="5" r="2.5" />
+                <circle cx="6" cy="19" r="2.5" />
+                <circle cx="18" cy="9" r="2.5" />
+                <path d="M6 7.5v9M18 11.5c0 4-6 3-11 5.5" />
+              </svg>
+            )}
+            {c.icone === 'web' && (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m8 8-4 4 4 4M16 8l4 4-4 4M13.5 5l-3 14" />
+              </svg>
+            )}
+          </span>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .section--nuit {
+    background:
+      radial-gradient(50% 40% at 100% 0%, rgba(198, 40, 40, 0.22) 0, transparent 70%),
+      var(--nuit);
+  }
+
+  .cartes {
+    display: grid;
+    gap: 14px;
+    margin: 40px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 600px) {
+    .cartes {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1000px) {
+    .cartes {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  .carte {
+    display: flex;
+    flex-direction: column;
+    min-height: 280px;
+    padding: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.04);
+    transition: border-color 0.3s ease, background-color 0.3s ease, transform 0.4s var(--courbe);
+  }
+
+  .carte:hover {
+    border-color: rgba(255, 138, 128, 0.5);
+    background: rgba(255, 255, 255, 0.07);
+  }
+
+  .haut {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 28px;
+  }
+
+  .numero {
+    color: var(--rouge-doux);
+    font-family: var(--police-mono);
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+  }
+
+  h3 {
+    font-size: 1.25rem;
+    letter-spacing: -0.02em;
+  }
+
+  .carte p {
+    margin: 0 0 24px;
+    line-height: 1.5;
+  }
+
+  .icone {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    margin-top: auto;
+    border-radius: 16px;
+    background: rgba(255, 138, 128, 0.12);
+    color: var(--rouge-doux);
+  }
+
+  .icone svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  .badge {
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: rgba(245, 184, 65, 0.16);
+    color: var(--or);
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+</style>

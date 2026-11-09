@@ -1,0 +1,109 @@
+---
+// Le ruban rouge entre le haut de page et « Qui suis-je ? ».
+// Les mots glissent quand on fait défiler la page (et seulement à ce moment-là).
+// C'est une décoration : les mêmes mots sont écrits plus bas, dans les sections.
+const mots = [
+  'Gestion de projet',
+  'Conception',
+  "Orchestration d'IA",
+  'Git et GitHub',
+  'Comprendre',
+  'Planifier',
+  'Construire',
+  'Vérifier',
+];
+const groupes = [0, 1, 2];
+---
+
+<div class="zone" aria-hidden="true">
+  <div class="ruban">
+    <div class="piste" data-piste>
+      {groupes.map(() => (
+        <span class="groupe">
+          {mots.map((mot, i) => (
+            <>
+              <span class={i % 2 ? 'italique' : ''}>{mot}</span>
+              <span class="etoile">✦</span>
+            </>
+          ))}
+        </span>
+      ))}
+    </div>
+  </div>
+</div>
+
+<script>
+  // Fait glisser les mots en suivant le défilement de la page.
+  const piste = document.querySelector<HTMLElement>('[data-piste]');
+  const mouvementReduit = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (piste && !mouvementReduit) {
+    let largeur = (piste.firstElementChild as HTMLElement).offsetWidth;
+    let attente = false;
+
+    const bouger = () => {
+      attente = false;
+      const decalage = (window.scrollY * 0.45) % largeur;
+      piste.style.transform = `translate3d(${-decalage}px, 0, 0)`;
+    };
+
+    window.addEventListener('scroll', () => {
+      if (!attente) {
+        attente = true;
+        requestAnimationFrame(bouger);
+      }
+    }, { passive: true });
+
+    window.addEventListener('resize', () => {
+      largeur = (piste.firstElementChild as HTMLElement).offsetWidth;
+      bouger();
+    });
+
+    bouger();
+  }
+</script>
+
+<style>
+  /* Le fond derrière le ruban penché : crème en haut, sable en bas */
+  .zone {
+    overflow: hidden;
+    padding: 28px 0;
+    background: linear-gradient(var(--creme) 50%, var(--sable) 50%);
+  }
+
+  .ruban {
+    margin: 0 -24px;
+    padding: 16px 0;
+    background: var(--rouge);
+    color: var(--creme);
+    transform: rotate(-2deg);
+    box-shadow: 0 16px 32px -16px rgba(74, 15, 20, 0.6);
+  }
+
+  .piste {
+    display: flex;
+    width: max-content;
+    will-change: transform;
+  }
+
+  .groupe {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    gap: 22px;
+    padding-right: 22px;
+    font-size: clamp(1.35rem, 4.2vw, 2.1rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+  }
+
+  .groupe .italique {
+    font-weight: 500;
+  }
+
+  .etoile {
+    color: var(--or);
+    font-size: 0.8em;
+  }
+</style>

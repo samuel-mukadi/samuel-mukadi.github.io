@@ -1,0 +1,42 @@
+---
+// Page affichée quand une adresse n'existe pas.
+import Base from '../layouts/Base.astro';
+---
+
+<Base titre="Page introuvable — Samuel Mukadi" description="Cette page n'existe pas.">
+  <main id="contenu" class="introuvable">
+    <span class="rond" aria-hidden="true">SM</span>
+    <h1>Page introuvable</h1>
+    <p>Cette page n'existe pas ou a changé d'adresse.</p>
+    <a class="btn btn--plein" href="/">Revenir à l'accueil</a>
+  </main>
+</Base>
+
+<style>
+  .introuvable {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 32px 16px;
+    text-align: center;
+  }
+
+  .rond {
+    display: grid;
+    place-items: center;
+    width: 72px;
+    height: 72px;
+    margin-bottom: 20px;
+    border-radius: 50%;
+    background: var(--rouge);
+    color: #fff;
+    font-size: 1.5rem;
+    font-weight: 800;
+  }
+
+  p {
+    color: var(--gris);
+  }
+</style>

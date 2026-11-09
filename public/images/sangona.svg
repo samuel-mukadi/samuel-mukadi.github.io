@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400">
+  <!-- Sangona : le journal d'un cercle sur un téléphone, avec les membres autour -->
+  <rect width="640" height="400" fill="#FDECEA"/>
+  <circle cx="560" cy="60" r="110" fill="#F8D3CF"/>
+  <circle cx="70" cy="360" r="120" fill="#F8D3CF"/>
+
+  <!-- Les membres du cercle, reliés -->
+  <g stroke="#E57373" stroke-width="3" stroke-dasharray="2 8" stroke-linecap="round">
+    <path d="M430 150 L520 120"/>
+    <path d="M430 220 L540 230"/>
+    <path d="M430 290 L505 330"/>
+    <path d="M210 150 L120 120"/>
+    <path d="M210 250 L110 245"/>
+  </g>
+  <circle cx="525" cy="118" r="22" fill="#C62828"/>
+  <circle cx="548" cy="232" r="18" fill="#E57373"/>
+  <circle cx="510" cy="334" r="15" fill="#EF9A9A"/>
+  <circle cx="112" cy="118" r="17" fill="#E57373"/>
+  <circle cx="100" cy="245" r="22" fill="#C62828"/>
+
+  <!-- Le téléphone -->
+  <rect x="232" y="30" width="176" height="340" rx="28" fill="#1F1F1F"/>
+  <rect x="242" y="42" width="156" height="316" rx="20" fill="#FFFFFF"/>
+  <rect x="300" y="50" width="40" height="6" rx="3" fill="#E0E0E0"/>
+
+  <!-- Les ronds des cercles -->
+  <circle cx="268" cy="82" r="11" fill="#C62828"/>
+  <circle cx="298" cy="82" r="11" fill="#E57373"/>
+  <circle cx="328" cy="82" r="11" fill="#EF9A9A"/>
+  <circle cx="358" cy="82" r="11" fill="#F8D3CF"/>
+
+  <!-- Les pages du journal, l'une sur l'autre -->
+  <rect x="268" y="124" width="108" height="206" rx="10" fill="#F1F1F1"/>
+  <rect x="262" y="116" width="114" height="206" rx="10" fill="#FFFFFF" stroke="#E0E0E0" stroke-width="2"/>
+
+  <!-- La spirale du carnet -->
+  <g fill="#FFFFFF" stroke="#C62828" stroke-width="3">
+    <circle cx="280" cy="116" r="5"/>
+    <circle cx="298" cy="116" r="5"/>
+    <circle cx="316" cy="116" r="5"/>
+    <circle cx="334" cy="116" r="5"/>
+    <circle cx="352" cy="116" r="5"/>
+  </g>
+
+  <!-- Le contenu de la page -->
+  <rect x="276" y="136" width="58" height="9" rx="4.5" fill="#C62828"/>
+  <rect x="276" y="154" width="86" height="6" rx="3" fill="#E0E0E0"/>
+  <rect x="276" y="166" width="70" height="6" rx="3" fill="#E0E0E0"/>
+  <rect x="276" y="184" width="86" height="72" rx="8" fill="#FDECEA"/>
+  <circle cx="298" cy="210" r="9" fill="#EF9A9A"/>
+  <path d="M276 248 L304 224 L322 240 L338 228 L362 248 Z" fill="#E57373"/>
+  <rect x="276" y="268" width="86" height="6" rx="3" fill="#E0E0E0"/>
+  <rect x="276" y="280" width="60" height="6" rx="3" fill="#C62828" opacity="0.35"/>
+  <rect x="300" y="300" width="38" height="5" rx="2.5" fill="#BDBDBD"/>
+
+  <!-- La barre du bas -->
+  <circle cx="282" cy="340" r="5" fill="#C62828"/>
+  <circle cx="320" cy="340" r="5" fill="#BDBDBD"/>
+  <circle cx="358" cy="340" r="5" fill="#BDBDBD"/>
+</svg>

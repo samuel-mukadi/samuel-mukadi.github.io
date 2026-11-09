@@ -1,0 +1,223 @@
+---
+// Une carte du paquet de projets : un grand carré en dégradé,
+// l'image du projet dans une fenêtre, le genre de projet, le nom
+// et un bouton pour ouvrir la fiche complète.
+interface Props {
+  numero: number;
+  total: number;
+  nom: string;
+  type: string;
+  etat: string;
+  image: string;
+  alt: string;
+}
+
+const { numero, total, nom, type, etat, image, alt } = Astro.props;
+---
+
+<article
+  class={`carte teinte-${numero}`}
+  data-carte
+  aria-roledescription="diapositive"
+  aria-label={`${numero} sur ${total} : ${nom}`}
+>
+  <div class="fenetre">
+    <div class="barre">
+      <span class="points" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="etat">{etat}</span>
+    </div>
+    <img src={image} alt={alt} width="640" height="400" decoding="async" draggable="false" />
+  </div>
+
+  <div class="bas">
+    <div>
+      <p class="type">{type}</p>
+      <h3>{nom}</h3>
+    </div>
+    <button class="detail" type="button" data-ouvrir={`fiche-${numero}`} aria-label={`Voir le détail de ${nom}`}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M7 17 17 7M8 7h9v9" />
+      </svg>
+    </button>
+  </div>
+</article>
+
+<style>
+  .carte {
+    display: flex;
+    flex-direction: column;
+    aspect-ratio: 5 / 6;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--rayon-grand);
+    color: #fff;
+    box-shadow: 0 30px 60px -20px rgba(18, 20, 28, 0.55);
+    user-select: none;
+    touch-action: pan-y;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  @media (min-width: 900px) {
+    .carte {
+      aspect-ratio: 6 / 5;
+    }
+  }
+
+  /* Trois dégradés, un par projet, tous dans la palette du site */
+  .teinte-1 {
+    background:
+      radial-gradient(circle at 88% 0%, rgba(229, 57, 53, 0.65) 0, transparent 52%),
+      linear-gradient(160deg, var(--bordeaux) 0%, var(--nuit-2) 60%, var(--nuit) 100%);
+  }
+
+  .teinte-2 {
+    background:
+      radial-gradient(circle at 12% 0%, rgba(245, 184, 65, 0.42) 0, transparent 50%),
+      linear-gradient(160deg, #3B1A10 0%, var(--nuit-2) 58%, var(--nuit) 100%);
+  }
+
+  .teinte-3 {
+    background:
+      radial-gradient(circle at 92% 8%, rgba(198, 40, 40, 0.5) 0, transparent 46%),
+      radial-gradient(circle at 0% 100%, rgba(245, 184, 65, 0.22) 0, transparent 40%),
+      linear-gradient(160deg, var(--nuit-2) 0%, var(--nuit) 100%);
+  }
+
+  /* La fenêtre, comme un navigateur, avec l'image du projet */
+  .fenetre {
+    margin: 14px 14px 0;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    background: var(--nuit);
+  }
+
+  @media (min-width: 900px) {
+    .fenetre {
+      margin: 20px 20px 0;
+    }
+  }
+
+  .barre {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 34px;
+    padding: 0 12px;
+  }
+
+  .points {
+    position: absolute;
+    left: 12px;
+    display: flex;
+    gap: 6px;
+  }
+
+  .points i {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.25);
+  }
+
+  .points i:first-child {
+    background: var(--rouge);
+  }
+
+  .points i:nth-child(2) {
+    background: var(--or);
+  }
+
+  .etat {
+    max-width: 62%;
+    overflow: hidden;
+    padding: 3px 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--texte-clair);
+    font-family: var(--police-mono);
+    font-size: 0.68rem;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  img {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    pointer-events: none;
+  }
+
+  @media (min-width: 900px) {
+    img {
+      aspect-ratio: 16 / 9;
+    }
+  }
+
+  .bas {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: auto;
+    padding: 0 20px 22px;
+  }
+
+  @media (min-width: 900px) {
+    .bas {
+      padding: 0 28px 26px;
+    }
+  }
+
+  .type {
+    margin: 0 0 4px;
+    color: var(--rouge-doux);
+    font-family: var(--police-mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  h3 {
+    margin: 0;
+    color: #fff;
+    font-size: clamp(1.7rem, 6vw, 2.3rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.03em;
+  }
+
+  .detail {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    flex-shrink: 0;
+    border: 0;
+    border-radius: 50%;
+    background: var(--creme);
+    color: var(--nuit);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.3s var(--courbe), background-color 0.2s ease;
+  }
+
+  .detail:hover {
+    transform: rotate(45deg);
+  }
+
+  .detail:active {
+    background: var(--or);
+  }
+
+  .detail svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .detail:focus-visible {
+    outline-color: var(--or);
+  }
+</style>
