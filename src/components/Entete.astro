@@ -14,7 +14,12 @@ const liens = [
 <header class="entete">
   <div class="conteneur ligne">
     <a class="marque" href="#accueil">
-      <span class="rond" aria-hidden="true">SM</span>
+      <span class="rond" aria-hidden="true">
+        <picture>
+          <source srcset="/images/samuel-rond.webp" type="image/webp" />
+          <img src="/images/samuel-rond.jpg" alt="" width="40" height="40" decoding="async" />
+        </picture>
+      </span>
       <span>Samuel Mukadi</span>
     </a>
 
@@ -140,17 +145,23 @@ const liens = [
     text-decoration: none;
   }
 
+  /* Ma photo dans un rond, avec un anneau rouge */
   .rond {
-    display: grid;
-    place-items: center;
+    display: block;
     width: 40px;
     height: 40px;
+    flex-shrink: 0;
+    padding: 2px;
     border-radius: 50%;
     background: var(--rouge);
-    color: #fff;
-    font-size: 0.95rem;
-    font-weight: 800;
-    letter-spacing: 0.02em;
+  }
+
+  .rond img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
   }
 
   .menu ul {

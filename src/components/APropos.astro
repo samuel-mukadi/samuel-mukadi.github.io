@@ -1,6 +1,6 @@
 ---
-// « Qui suis-je ? » : mon histoire, le grand carré en dégradé (la place de ma
-// photo plus tard), mon équipe et ma méthode de travail.
+// « Qui suis-je ? » : mon histoire, le grand carré avec ma photo, mon équipe
+// et ma méthode de travail.
 const etapes = [
   {
     titre: 'Comprendre',
@@ -45,10 +45,20 @@ const etapes = [
       </div>
 
       <div class="visuel surgit s1">
-        <!-- Le grand carré. Pour mettre ta photo plus tard : remplacer
-             <span class="initiales">SM</span> par
-             <img src="/images/samuel.jpg" alt="Samuel Mukadi" /> -->
-        <div class="carre">
+        <!-- Le grand carré avec ma photo (800 × 800).
+             Pour la changer : node outils/preparer-photo.mjs <ma photo> public/images/samuel 800 800 -->
+        <div class="carre carre--photo">
+          <picture>
+            <source srcset="/images/samuel.webp" type="image/webp" />
+            <img
+              src="/images/samuel.jpg"
+              alt="Samuel Mukadi"
+              width="800"
+              height="800"
+              loading="lazy"
+              decoding="async"
+            />
+          </picture>
           <span class="lieu">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21Z" />
@@ -56,7 +66,6 @@ const etapes = [
             </svg>
             RDC
           </span>
-          <span class="initiales" aria-hidden="true">SM</span>
         </div>
 
         <figure class="equipe">
@@ -153,18 +162,13 @@ const etapes = [
     aspect-ratio: 1;
   }
 
-  .initiales {
-    position: relative;
-    z-index: 1;
-    color: #fff;
-    font-size: clamp(5rem, 24vw, 8.5rem);
-    font-weight: 800;
-    letter-spacing: -0.04em;
-    line-height: 1;
-    text-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+  /* Avec la photo : plus de cercles, la photo remplit tout le carré */
+  .carre--photo::before,
+  .carre--photo::after {
+    display: none;
   }
 
-  .carre :global(img) {
+  .carre img {
     position: absolute;
     inset: 0;
     width: 100%;

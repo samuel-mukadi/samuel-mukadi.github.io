@@ -58,7 +58,12 @@ const liens = [
     </div>
 
     <p class="geant">
-      <span class="rond" aria-hidden="true">SM</span>
+      <span class="rond" aria-hidden="true">
+        <picture>
+          <source srcset="/images/samuel-rond.webp" type="image/webp" />
+          <img src="/images/samuel-rond.jpg" alt="" width="120" height="120" loading="lazy" decoding="async" />
+        </picture>
+      </span>
       <span>Samuel Mukadi</span>
     </p>
     <p class="metier">Chef de projet digital &amp; <span class="italique">orchestrateur d'IA</span></p>
@@ -192,18 +197,26 @@ const liens = [
     display: none;
   }
 
+  /* Ma photo dans un rond, avec un anneau doré (seulement sur les grands écrans :
+     sur téléphone, le nom prend déjà toute la largeur) */
   @media (min-width: 768px) {
     .rond {
-      display: grid;
-      place-items: center;
+      display: block;
       width: 2.1em;
       height: 2.1em;
       flex-shrink: 0;
+      padding: 0.08em;
       border-radius: 50%;
       background: var(--or);
-      color: var(--nuit);
       font-size: 0.4em;
-      letter-spacing: 0;
+    }
+
+    .rond img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
     }
   }
 

@@ -1,6 +1,8 @@
 <!doctype html>
 <!-- Le dessin de l'image d'aperçu (1200 × 630), celle qui s'affiche quand on partage
      le lien du site sur WhatsApp, Telegram, Facebook…
+     Ma photo : outils/photo-apercu.jpg (640 × 800, de la tête aux mains, faite avec
+     node outils/preparer-photo.mjs <photo> outils/photo-apercu 640 800 x y l h).
      Pour refaire l'image après un changement : node outils/fabriquer-image-apercu.mjs -->
 <html lang="fr">
   <head>
@@ -138,13 +140,13 @@
         letter-spacing: 0.04em;
       }
 
-      /* À droite : le paquet de cartes des projets, comme sur le site */
+      /* À droite : ma photo, posée sur le paquet de cartes des projets (comme sur le site) */
       .paquet {
         position: absolute;
-        top: 104px;
-        right: 72px;
-        width: 380px;
-        height: 360px;
+        top: 92px;
+        right: 80px;
+        width: 344px;
+        height: 430px;
       }
 
       .carte {
@@ -158,11 +160,42 @@
         box-shadow: 0 30px 60px -10px rgba(0, 0, 0, 0.6);
       }
 
+      /* La carte du dessus = ma photo (de la tête aux mains) */
       .c1 {
         z-index: 3;
-        background:
-          radial-gradient(circle at 88% 0%, rgba(229, 57, 53, 0.65) 0, transparent 52%),
-          linear-gradient(160deg, var(--bordeaux) 0%, var(--nuit-2) 60%, var(--nuit) 100%);
+        background: var(--nuit-2);
+      }
+
+      .c1 > img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: 50% 0;
+      }
+
+      .lieu {
+        position: absolute;
+        top: 16px;
+        left: 16px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 14px;
+        border-radius: 999px;
+        background: rgba(18, 20, 28, 0.7);
+        color: #fff;
+        font-family: var(--police-mono);
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+      }
+
+      .lieu svg {
+        width: 17px;
+        height: 17px;
+        color: var(--or);
       }
 
       .c2 {
@@ -216,27 +249,6 @@
         object-fit: cover;
       }
 
-      .bas {
-        margin-top: auto;
-        padding: 0 22px 20px;
-      }
-
-      .type {
-        color: var(--rouge-doux);
-        font-family: var(--police-mono);
-        font-size: 13px;
-        font-weight: 600;
-        letter-spacing: 0.18em;
-        text-transform: uppercase;
-      }
-
-      .nom {
-        margin-top: 4px;
-        font-size: 36px;
-        font-weight: 800;
-        line-height: 1;
-        letter-spacing: -0.03em;
-      }
     </style>
   </head>
   <body>
@@ -264,11 +276,14 @@
         <div class="fenetre"><div class="barre"><i></i><i></i><i></i></div><img src="../public/images/dop-idara.svg" alt="" /></div>
       </div>
       <div class="carte c1">
-        <div class="fenetre"><div class="barre"><i></i><i></i><i></i></div><img src="../public/images/sangona.svg" alt="" /></div>
-        <div class="bas">
-          <p class="type">Réseau social</p>
-          <p class="nom">Sangona</p>
-        </div>
+        <img src="photo-apercu.jpg" alt="" />
+        <span class="lieu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21Z" />
+            <circle cx="12" cy="9.5" r="2.5" />
+          </svg>
+          RDC
+        </span>
       </div>
     </div>
 
