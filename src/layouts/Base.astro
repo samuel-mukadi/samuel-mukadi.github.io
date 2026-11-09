@@ -1,6 +1,7 @@
 ---
 // Squelette commun à toutes les pages : en-tête HTML, titre, description.
 import '../styles/global.css';
+import { firebase } from '../data/firebase.js';
 
 interface Props {
   titre: string;
@@ -9,8 +10,11 @@ interface Props {
 
 const { titre, description } = Astro.props;
 const adresse = new URL(Astro.url.pathname, Astro.site);
-// L'image d'aperçu (1200 × 630) : refaite avec « node outils/fabriquer-image-apercu.mjs »
-const imageApercu = new URL('/og-image.jpg', Astro.site);
+// L'image d'aperçu (1200 × 630) : refaite avec « node outils/fabriquer-image-apercu.mjs ».
+// Le « ?v=2 » oblige WhatsApp à reprendre la nouvelle image : l'augmenter à chaque changement.
+const imageApercu = new URL('/og-image.jpg?v=2', Astro.site);
+// Les avis en direct parlent à la base Firestore : seule adresse extérieure autorisée.
+const connexions = firebase.projet ? "'self' https://firestore.googleapis.com" : "'self'";
 ---
 
 <!doctype html>
@@ -18,11 +22,11 @@ const imageApercu = new URL('/og-image.jpg', Astro.site);
   <head>
     <meta charset="utf-8" />
     <!-- Sécurité : la page n'accepte que ses propres fichiers (scripts, styles, images).
-         Aucun script venu d'ailleurs, aucun formulaire, aucune intégration dans un autre site
-         par <object> ou <base>. -->
+         Aucun script venu d'ailleurs, aucun formulaire envoyé vers une autre page, aucune
+         intégration par <object> ou <base>. Seule exception : la base des avis (Firestore). -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'"
+      content={`default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src ${connexions}; object-src 'none'; base-uri 'self'; form-action 'none'`}
     />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{titre}</title>
@@ -45,7 +49,7 @@ const imageApercu = new URL('/og-image.jpg', Astro.site);
     <meta property="og:image:type" content="image/jpeg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="Samuel Mukadi, chef de projet digital et orchestrateur d'IA, et les cartes de ses projets" />
+    <meta property="og:image:alt" content="Photo de Samuel Mukadi, chef de projet digital et orchestrateur d'IA, devant les cartes de ses projets" />
     <meta name="twitter:card" content="summary_large_image" />
 
     <!-- Signale que JavaScript marche (sert au menu du téléphone) -->

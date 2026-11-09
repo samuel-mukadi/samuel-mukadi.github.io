@@ -1,0 +1,40 @@
+rules_version = '2';
+
+// Règles de protection des avis (base Firestore du projet Firebase de Samuel).
+// À coller dans la console Firebase : Firestore Database > Règles > Publier.
+//
+// - Tout le monde peut LIRE les avis (ils s'affichent sur le site).
+// - Tout le monde peut AJOUTER un avis, seulement s'il est propre :
+//   nom de 2 à 40 lettres, « ce que je fais » jusqu'à 60, note de 1 à 5,
+//   avis de 10 à 400 lettres, sans lien, date mise par le serveur.
+// - Personne ne peut MODIFIER ni SUPPRIMER un avis depuis le site.
+//   Samuel retire un avis lui-même dans la console Firebase.
+// - Tout le reste de la base est fermé.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function sansLien(texte) {
+      return !texte.lower().matches('(?s).*(https?://|www[.]).*');
+    }
+
+    function avisPropre(d) {
+      return d.keys().hasOnly(['nom', 'role', 'note', 'texte', 'date'])
+        && d.keys().hasAll(['nom', 'role', 'note', 'texte', 'date'])
+        && d.nom is string && d.nom.size() >= 2 && d.nom.size() <= 40 && sansLien(d.nom)
+        && d.role is string && d.role.size() <= 60 && sansLien(d.role)
+        && d.note is int && d.note >= 1 && d.note <= 5
+        && d.texte is string && d.texte.size() >= 10 && d.texte.size() <= 400 && sansLien(d.texte)
+        && d.date == request.time;
+    }
+
+    match /avis/{avisId} {
+      allow read: if true;
+      allow create: if avisPropre(request.resource.data);
+      allow update, delete: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

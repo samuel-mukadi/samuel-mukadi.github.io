@@ -13,12 +13,14 @@ Une seule page, pensée d'abord pour le téléphone :
   sur le côté avec les flèches, en la faisant glisser du doigt, ou toute seule toutes les 6 secondes.
   Le bouton fléché d'une carte ouvre sa fiche complète.
 - **Ruban rouge** : mes compétences et ma méthode, qui glissent quand on fait défiler la page.
-- **Qui suis-je ?** : mon histoire, le grand carré en dégradé (la place de ma photo), mon équipe
+- **Qui suis-je ?** : mon histoire, ma photo dans le grand carré, mon équipe
   (je décide, Claude construit, Codex vérifie) et ma méthode en 4 étapes.
 - **Compétences** : gestion de projet et conception, orchestration d'IA, Git et GitHub,
   bases du web (en apprentissage).
-- **Avis** (« Ce qu'ils pensent de moi ») : seulement des avis vrais, reçus sur WhatsApp
-  et publiés avec l'accord de la personne.
+- **Avis** (« Ce qu'ils pensent de moi ») : seulement des avis vrais. Avec Firebase réglé,
+  la personne remplit un petit formulaire et son avis s'affiche tout de suite (protégé par
+  `firebase/firestore.rules` ; Samuel retire un avis dans la console Firebase). Sans Firebase,
+  le bouton ouvre WhatsApp.
 - **Contact** : on choisit son besoin et pour quand ; le bouton WhatsApp s'ouvre avec le message
   déjà écrit. Aussi l'e-mail et GitHub.
 - **Bas de page** : mes contacts, mon nom en grand, le menu.
@@ -55,10 +57,12 @@ Puis ouvrir l'adresse affichée (en général http://localhost:4321).
 | -------------------------------------- | ----------------------------------- |
 | les textes d'une section               | `src/components/<Section>.astro`    |
 | les 3 projets (et la démo)             | `src/data/projets.js`               |
-| les avis (seulement des avis vrais)    | `src/data/avis.js`                  |
+| les avis reçus autrement (WhatsApp…)   | `src/data/avis.js`                  |
+| les avis en direct (projet Firebase)   | `src/data/firebase.js` ; règles : `firebase/firestore.rules` |
 | WhatsApp, e-mail, GitHub               | `src/data/contact.js`               |
 | les couleurs et les boutons            | `src/styles/global.css`             |
 | les images des projets                 | `public/images/`                    |
-| ma photo (dans « Qui suis-je ? »)      | `src/components/APropos.astro`      |
+| ma photo (dans « Qui suis-je ? »)      | `node outils/preparer-photo.mjs <photo> public/images/samuel 800 800` (la réduit et la rend légère) |
 | le titre et la description             | `src/pages/index.astro`             |
-| l'image d'aperçu (partage WhatsApp…)   | `outils/image-apercu.html`, puis `node outils/fabriquer-image-apercu.mjs` |
+| ma photo dans les petits ronds (haut et bas) | `public/images/samuel-rond.*` (240 × 240, faite avec `outils/preparer-photo.mjs`) |
+| l'image d'aperçu (partage WhatsApp…)   | `outils/image-apercu.html` (photo : `outils/photo-apercu.jpg`), puis `node outils/fabriquer-image-apercu.mjs` et augmenter le `?v=` dans `src/layouts/Base.astro` |

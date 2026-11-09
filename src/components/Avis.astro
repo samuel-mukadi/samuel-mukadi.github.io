@@ -1,11 +1,19 @@
 ---
 // « Ce qu'ils pensent de moi » : les avis et les étoiles.
-// Les avis sont dans src/data/avis.js (seulement des avis vrais).
+//
+// Deux sources d'avis (seulement des avis vrais, jamais inventés) :
+// 1. Les avis EN DIRECT : la personne remplit le petit formulaire, son avis est rangé dans
+//    la base Firestore (Firebase) et s'affiche tout de suite. Réglages : src/data/firebase.js ;
+//    protections : firebase/firestore.rules. Samuel retire un avis dans la console Firebase.
+// 2. Les avis reçus autrement (WhatsApp…), ajoutés à la main dans src/data/avis.js.
+//
+// Tant que Firebase n'est pas réglé, le bouton « Donner mon avis » ouvre WhatsApp.
 // S'il y a plusieurs avis, on les montre un par un : on choisit avec les ronds (initiales).
-// Le bouton « Donner mon avis » ouvre WhatsApp avec un message déjà préparé.
 import { avis } from '../data/avis.js';
 import { contact } from '../data/contact.js';
+import { firebase } from '../data/firebase.js';
 
+const enDirect = Boolean(firebase.projet);
 const total = avis.length;
 const moyenne = total ? avis.reduce((somme, a) => somme + a.note, 0) / total : 0;
 const moyenneTexte = moyenne.toFixed(1).replace('.', ',');
@@ -30,7 +38,15 @@ const initiales = (nom: string) =>
 const cinq = [1, 2, 3, 4, 5];
 ---
 
-<section id="avis" class="section section--creme avis" aria-labelledby="titre-avis">
+<section
+  id="avis"
+  class="section section--creme avis"
+  aria-labelledby="titre-avis"
+  data-avis-section
+  data-projet={firebase.projet}
+  data-cle={firebase.cle}
+  data-fixes={JSON.stringify(avis)}
+>
   <div class="conteneur grille">
     <div class="gauche surgit">
       <span class="guillemet" aria-hidden="true">“</span>
@@ -39,29 +55,25 @@ const cinq = [1, 2, 3, 4, 5];
         Ce qu'ils pensent <span class="italique accent">de moi</span>
       </h2>
 
-      {total > 0 && (
-        <p class="moyenne">
-          <span class="etoiles" role="img" aria-label={`Note moyenne : ${moyenneTexte} sur 5`}>
-            {cinq.map((n) => <span class={n <= etoilesMoyenne ? 'pleine' : 'vide'}>★</span>)}
-          </span>
-          <span><strong>{moyenneTexte} sur 5</strong>, d'après {total} avis</span>
-        </p>
-      )}
+      <p class="moyenne" data-moyenne hidden={total === 0}>
+        <span class="etoiles" role="img" aria-label={`Note moyenne : ${moyenneTexte} sur 5`}>
+          {cinq.map((n) => <span class={n <= etoilesMoyenne ? 'pleine' : 'vide'}>★</span>)}
+        </span>
+        <span><strong>{moyenneTexte} sur 5</strong>, d'après {total} avis</span>
+      </p>
 
-      {total > 1 && (
-        <div class="visages" role="group" aria-label="Choisir l'avis à lire">
-          {avis.map((a, i) => (
-            <button type="button" class="visage" data-visage aria-pressed={i === 0 ? 'true' : 'false'} aria-label={`Lire l'avis de ${a.nom}`}>
-              {initiales(a.nom)}
-            </button>
-          ))}
-        </div>
-      )}
+      <div class="visages" role="group" aria-label="Choisir l'avis à lire" data-visages hidden={total < 2}>
+        {total > 1 && avis.map((a, i) => (
+          <button type="button" class="visage" data-visage aria-pressed={i === 0 ? 'true' : 'false'} aria-label={`Lire l'avis de ${a.nom}`}>
+            {initiales(a.nom)}
+          </button>
+        ))}
+      </div>
     </div>
 
     <div class="droite surgit s1" data-avis-zone>
       {total > 0 ? (
-        avis.map((a, i) => (
+        avis.map((a) => (
           <figure class="temoignage" data-avis>
             <div class="carte-avis">
               <span class="etoiles" role="img" aria-label={`${a.note} sur 5`}>
@@ -76,7 +88,7 @@ const cinq = [1, 2, 3, 4, 5];
           </figure>
         ))
       ) : (
-        <div class="temoignage">
+        <div class="temoignage" data-attente>
           <div class="carte-avis">
             <p class="etoiles grandes" aria-hidden="true">
               {cinq.map(() => <span class="pleine">★</span>)}
@@ -91,7 +103,7 @@ const cinq = [1, 2, 3, 4, 5];
       )}
 
       <div class="action">
-        <a class="btn btn--nuit btn--fleche" href={lienAvis} target="_blank" rel="noopener noreferrer">
+        <a class="btn btn--nuit btn--fleche" href={lienAvis} target="_blank" rel="noopener noreferrer" data-donner-avis>
           Donner mon avis
           <span class="rond-fleche" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="currentColor">
@@ -99,24 +111,307 @@ const cinq = [1, 2, 3, 4, 5];
             </svg>
           </span>
         </a>
-        <p class="note-action">Votre avis m'arrive sur WhatsApp. Il est publié ici seulement avec votre accord.</p>
+        <p class="note-action" data-note-action>
+          Votre avis m'arrive sur WhatsApp. Il est publié ici seulement avec votre accord.
+        </p>
       </div>
     </div>
   </div>
+
+  {/* Modèles utilisés par le script pour afficher les avis en direct */}
+  <template data-modele-avis>
+    <figure class="temoignage" data-avis>
+      <div class="carte-avis">
+        <span class="etoiles" role="img">
+          {cinq.map(() => <span class="vide">★</span>)}
+        </span>
+        <blockquote class="citation"></blockquote>
+      </div>
+      <figcaption class="etiquette">
+        <strong></strong>
+        <span></span>
+      </figcaption>
+    </figure>
+  </template>
+  <template data-modele-visage>
+    <button type="button" class="visage" data-visage aria-pressed="false"></button>
+  </template>
+
+  {enDirect && (
+    <dialog class="fiche-avis" aria-labelledby="titre-fiche-avis" data-fiche-avis>
+      <button class="fermer" type="button" data-fermer aria-label="Fermer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+          <path d="M6 6l12 12M18 6 6 18" />
+        </svg>
+      </button>
+
+      <form class="formulaire" data-formulaire-avis>
+        <p class="sur-titre">Avis</p>
+        <h3 id="titre-fiche-avis">Donner mon avis</h3>
+        <p class="explication">
+          Votre avis est publié tout de suite sur cette page, avec votre nom.
+          Les liens ne sont pas acceptés.
+        </p>
+
+        <fieldset class="choix-note" data-choix-note>
+          <legend>Votre note <span class="requis">(obligatoire)</span></legend>
+          {cinq.map((n) => (
+            <label>
+              <input type="radio" name="note" value={n} required />
+              <span aria-hidden="true">★</span>
+              <span class="visuellement-cache">{n} sur 5</span>
+            </label>
+          ))}
+        </fieldset>
+
+        <label class="champ">
+          <span>Votre nom <span class="requis">(obligatoire)</span></span>
+          <input type="text" name="nom" required minlength="2" maxlength="40" autocomplete="name" />
+        </label>
+
+        <label class="champ">
+          <span>Ce que vous faites</span>
+          <input type="text" name="role" maxlength="60" placeholder="Ex. : Étudiante, responsable de club" />
+        </label>
+
+        <label class="champ">
+          <span>Votre avis <span class="requis">(obligatoire)</span></span>
+          <textarea name="texte" rows="4" required minlength="10" maxlength="400" data-texte-avis></textarea>
+          <span class="compteur" data-compteur-avis aria-live="polite">0 / 400</span>
+        </label>
+
+        {/* Piège à robots : caché aux personnes, les robots le remplissent */}
+        <div class="piege" aria-hidden="true">
+          <label>Ne pas remplir <input type="text" name="site" tabindex="-1" autocomplete="off" /></label>
+        </div>
+
+        <p class="etat" role="status" data-etat-avis></p>
+        <p class="secours" data-secours-avis hidden>
+          Vous pouvez aussi l'envoyer <a href={lienAvis} target="_blank" rel="noopener noreferrer">sur WhatsApp</a>.
+        </p>
+
+        <div class="boutons">
+          <button class="btn btn--nuit" type="submit" data-publier-avis>Publier mon avis</button>
+          <button class="btn annuler" type="button" data-fermer>Annuler</button>
+        </div>
+      </form>
+    </dialog>
+  )}
 </section>
 
 <script>
-  // Plusieurs avis : on en montre un seul à la fois, choisi avec les ronds.
-  const temoignages = [...document.querySelectorAll<HTMLElement>('[data-avis]')];
-  const visages = [...document.querySelectorAll<HTMLButtonElement>('[data-visage]')];
+  type UnAvis = { nom: string; role: string; note: number; texte: string };
 
-  if (temoignages.length > 1) {
+  const section = document.querySelector<HTMLElement>('[data-avis-section]');
+
+  if (section) {
+    const zone = section.querySelector<HTMLElement>('[data-avis-zone]')!;
+    const action = zone.querySelector<HTMLElement>('.action')!;
+    const moyenneBloc = section.querySelector<HTMLElement>('[data-moyenne]')!;
+    const visagesBloc = section.querySelector<HTMLElement>('[data-visages]')!;
+    const modeleAvis = section.querySelector<HTMLTemplateElement>('[data-modele-avis]')!;
+    const modeleVisage = section.querySelector<HTMLTemplateElement>('[data-modele-visage]')!;
+
+    const initiales = (nom: string) =>
+      nom.split(/\s+/).filter(Boolean).map((mot) => mot[0]).join('').slice(0, 2).toUpperCase();
+
+    // Un seul avis visible à la fois, choisi avec les ronds
     const montrer = (n: number) => {
-      temoignages.forEach((t, i) => { t.hidden = i !== n; });
-      visages.forEach((v, i) => v.setAttribute('aria-pressed', String(i === n)));
+      zone.querySelectorAll<HTMLElement>('[data-avis]').forEach((t, i) => { t.hidden = i !== n; });
+      visagesBloc.querySelectorAll('[data-visage]').forEach((v, i) => v.setAttribute('aria-pressed', String(i === n)));
     };
-    visages.forEach((v, i) => v.addEventListener('click', () => montrer(i)));
-    montrer(0);
+    visagesBloc.querySelectorAll('[data-visage]').forEach((v, i) => v.addEventListener('click', () => montrer(i)));
+    if (zone.querySelectorAll('[data-avis]').length > 1) montrer(0);
+
+    // Dessine la liste complète des avis (moyenne, ronds, cartes)
+    const afficher = (liste: UnAvis[]) => {
+      if (!liste.length) return;
+
+      const moyenne = liste.reduce((s, a) => s + a.note, 0) / liste.length;
+      const texte = moyenne.toFixed(1).replace('.', ',');
+      const etoiles = moyenneBloc.querySelector('.etoiles')!;
+      etoiles.setAttribute('aria-label', `Note moyenne : ${texte} sur 5`);
+      etoiles.querySelectorAll('span').forEach((e, i) => { e.className = i < Math.round(moyenne) ? 'pleine' : 'vide'; });
+      const resume = moyenneBloc.lastElementChild!;
+      const fort = document.createElement('strong');
+      fort.textContent = `${texte} sur 5`;
+      resume.replaceChildren(fort, `, d'après ${liste.length} avis`);
+      moyenneBloc.hidden = false;
+
+      zone.querySelectorAll('[data-avis], [data-attente]').forEach((e) => e.remove());
+      visagesBloc.replaceChildren();
+
+      liste.forEach((a, i) => {
+        const carte = modeleAvis.content.firstElementChild!.cloneNode(true) as HTMLElement;
+        const etoilesCarte = carte.querySelector('.etoiles')!;
+        etoilesCarte.setAttribute('aria-label', `${a.note} sur 5`);
+        etoilesCarte.querySelectorAll('span').forEach((e, n) => { e.className = n < a.note ? 'pleine' : 'vide'; });
+        carte.querySelector('.citation')!.textContent = a.texte;
+        carte.querySelector('.etiquette strong')!.textContent = a.nom;
+        const role = carte.querySelector<HTMLElement>('.etiquette span')!;
+        role.textContent = a.role;
+        role.hidden = !a.role;
+        zone.insertBefore(carte, action);
+
+        if (liste.length > 1) {
+          const rond = modeleVisage.content.firstElementChild!.cloneNode(true) as HTMLButtonElement;
+          rond.textContent = initiales(a.nom);
+          rond.setAttribute('aria-label', `Lire l'avis de ${a.nom}`);
+          rond.addEventListener('click', () => montrer(i));
+          visagesBloc.append(rond);
+        }
+      });
+      visagesBloc.hidden = liste.length < 2;
+      montrer(0);
+    };
+
+    // ---- Les avis en direct (Firebase) ----
+    const projet = section.dataset.projet;
+    const cle = section.dataset.cle;
+    const fiche = section.querySelector<HTMLDialogElement>('[data-fiche-avis]');
+
+    if (projet && fiche && typeof fiche.showModal === 'function') {
+      const fixes: UnAvis[] = JSON.parse(section.dataset.fixes || '[]');
+      const base = `https://firestore.googleapis.com/v1/projects/${projet}/databases/(default)/documents`;
+      const suffixe = cle ? `key=${encodeURIComponent(cle)}` : '';
+
+      type Champ = { stringValue?: string; integerValue?: string };
+      const lire = (champs: Record<string, Champ>): UnAvis => ({
+        nom: champs.nom?.stringValue ?? '',
+        role: champs.role?.stringValue ?? '',
+        note: Number(champs.note?.integerValue ?? 0),
+        texte: champs.texte?.stringValue ?? '',
+      });
+
+      const charger = async () => {
+        try {
+          const reponse = await fetch(`${base}/avis?pageSize=50&orderBy=date%20desc${suffixe ? '&' + suffixe : ''}`);
+          if (!reponse.ok) return;
+          const donnees: { documents?: { fields: Record<string, Champ> }[] } = await reponse.json();
+          const enLigne = (donnees.documents ?? [])
+            .map((d) => lire(d.fields ?? {}))
+            .filter((a) => a.nom && a.texte && a.note >= 1 && a.note <= 5);
+          afficher([...enLigne, ...fixes]);
+        } catch {
+          // Pas de connexion : on garde ce qui est déjà affiché
+        }
+      };
+      charger();
+
+      // Le bouton ouvre le formulaire au lieu de WhatsApp
+      const bouton = section.querySelector<HTMLAnchorElement>('[data-donner-avis]')!;
+      section.querySelector('[data-note-action]')!.textContent =
+        'Votre avis est publié tout de suite sur cette page, avec votre nom.';
+
+      const formulaire = fiche.querySelector<HTMLFormElement>('[data-formulaire-avis]')!;
+      const etat = fiche.querySelector<HTMLElement>('[data-etat-avis]')!;
+      const secours = fiche.querySelector<HTMLElement>('[data-secours-avis]')!;
+      const publier = fiche.querySelector<HTMLButtonElement>('[data-publier-avis]')!;
+      const zoneTexte = fiche.querySelector<HTMLTextAreaElement>('[data-texte-avis]')!;
+      const compteur = fiche.querySelector<HTMLElement>('[data-compteur-avis]')!;
+      const choixNote = fiche.querySelector<HTMLElement>('[data-choix-note]')!;
+      let ouvertA = 0;
+
+      bouton.addEventListener('click', (e) => {
+        e.preventDefault();
+        etat.textContent = '';
+        secours.hidden = true;
+        fiche.showModal();
+        ouvertA = Date.now();
+      });
+
+      fiche.addEventListener('click', (e) => {
+        const cible = e.target as HTMLElement;
+        if (cible === fiche || cible.closest('[data-fermer]')) fiche.close();
+      });
+      fiche.addEventListener('close', () => bouton.focus());
+
+      // Les étoiles s'allument jusqu'à la note choisie
+      choixNote.addEventListener('change', () => {
+        const choisie = choixNote.querySelector<HTMLInputElement>('input:checked');
+        choixNote.dataset.note = choisie ? choisie.value : '';
+      });
+
+      zoneTexte.addEventListener('input', () => {
+        compteur.textContent = `${zoneTexte.value.length} / 400`;
+      });
+
+      const dejaPublie = () => {
+        try { return localStorage.getItem('avis-publie') === '1'; } catch { return false; }
+      };
+
+      const idAuHasard = () => {
+        const lettres = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        return Array.from(crypto.getRandomValues(new Uint8Array(20)), (n) => lettres[n % lettres.length]).join('');
+      };
+
+      formulaire.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const donnees = new FormData(formulaire);
+        const nom = String(donnees.get('nom') ?? '').trim();
+        const role = String(donnees.get('role') ?? '').trim();
+        const texte = String(donnees.get('texte') ?? '').trim();
+        const note = Number(donnees.get('note'));
+        secours.hidden = true;
+
+        // Robot : on fait comme si c'était envoyé, sans rien envoyer
+        if (donnees.get('site') || Date.now() - ouvertA < 3000) {
+          etat.textContent = 'Merci ! Votre avis est publié.';
+          return;
+        }
+        if (dejaPublie()) {
+          etat.textContent = 'Merci, vous avez déjà donné votre avis depuis ce téléphone.';
+          return;
+        }
+        const lien = /(https?:\/\/|www\.)/i;
+        if (lien.test(nom) || lien.test(role) || lien.test(texte)) {
+          etat.textContent = 'Les liens ne sont pas acceptés. Retirez-les puis réessayez.';
+          return;
+        }
+        if (nom.length < 2 || texte.length < 10 || !(note >= 1 && note <= 5)) {
+          etat.textContent = 'Il manque votre note, votre nom ou votre avis (10 lettres au moins).';
+          return;
+        }
+
+        publier.disabled = true;
+        etat.textContent = 'Envoi en cours…';
+        const id = idAuHasard();
+        try {
+          const reponse = await fetch(`${base}:commit${suffixe ? '?' + suffixe : ''}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              writes: [{
+                update: {
+                  name: `projects/${projet}/databases/(default)/documents/avis/${id}`,
+                  fields: {
+                    nom: { stringValue: nom },
+                    role: { stringValue: role },
+                    note: { integerValue: String(note) },
+                    texte: { stringValue: texte },
+                  },
+                },
+                currentDocument: { exists: false },
+                updateTransforms: [{ fieldPath: 'date', setToServerValue: 'REQUEST_TIME' }],
+              }],
+            }),
+          });
+          if (!reponse.ok) throw new Error(String(reponse.status));
+          try { localStorage.setItem('avis-publie', '1'); } catch { /* rien */ }
+          formulaire.reset();
+          choixNote.dataset.note = '';
+          compteur.textContent = '0 / 400';
+          etat.textContent = 'Merci ! Votre avis est publié.';
+          await charger();
+          setTimeout(() => fiche.close(), 1600);
+        } catch {
+          etat.textContent = "Votre avis n'a pas pu être envoyé. Vérifiez votre connexion et réessayez.";
+          secours.hidden = false;
+        } finally {
+          publier.disabled = false;
+        }
+      });
+    }
   }
 </script>
 
@@ -164,6 +459,10 @@ const cinq = [1, 2, 3, 4, 5];
     font-size: 1.05rem;
   }
 
+  .moyenne[hidden] {
+    display: none;
+  }
+
   .moyenne strong {
     color: var(--texte);
   }
@@ -193,6 +492,10 @@ const cinq = [1, 2, 3, 4, 5];
     flex-wrap: wrap;
     gap: 12px;
     margin-top: 24px;
+  }
+
+  :global(.js) .visages[hidden] {
+    display: none;
   }
 
   .visage {
@@ -252,6 +555,8 @@ const cinq = [1, 2, 3, 4, 5];
     font-family: var(--police-serif);
     font-size: clamp(1.5rem, 4.6vw, 2.1rem);
     line-height: 1.25;
+    overflow-wrap: anywhere;
+    white-space: pre-line;
   }
 
   .grandes {
@@ -277,6 +582,7 @@ const cinq = [1, 2, 3, 4, 5];
     color: #fff;
     transform: rotate(2deg);
     position: relative;
+    overflow-wrap: anywhere;
   }
 
   .etiquette span {
@@ -287,6 +593,10 @@ const cinq = [1, 2, 3, 4, 5];
     text-transform: uppercase;
   }
 
+  .etiquette span[hidden] {
+    display: none;
+  }
+
   .action {
     margin-top: 36px;
   }
@@ -294,5 +604,241 @@ const cinq = [1, 2, 3, 4, 5];
   .note-action {
     margin: 12px 0 0;
     font-size: 0.88rem;
+  }
+
+  /* Le formulaire « Donner mon avis » */
+
+  .fiche-avis {
+    width: min(520px, calc(100% - 32px));
+    max-height: calc(100dvh - 32px);
+    padding: 0;
+    overflow: auto;
+    border: 0;
+    border-radius: 24px;
+    background: var(--creme);
+    color: var(--gris);
+    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.45);
+  }
+
+  .fiche-avis[open] {
+    animation: entree-avis 0.5s var(--courbe);
+  }
+
+  @keyframes entree-avis {
+    from {
+      opacity: 0;
+      transform: translateY(24px) scale(0.97);
+    }
+  }
+
+  .fiche-avis::backdrop {
+    background: rgba(18, 20, 28, 0.75);
+  }
+
+  .fermer {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(18, 20, 28, 0.08);
+    color: var(--texte);
+    cursor: pointer;
+  }
+
+  .fermer:hover {
+    background: rgba(18, 20, 28, 0.16);
+  }
+
+  .fermer:active {
+    background: var(--or);
+  }
+
+  .fermer svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .formulaire {
+    display: grid;
+    gap: 18px;
+    padding: 28px 22px 26px;
+  }
+
+  @media (min-width: 600px) {
+    .formulaire {
+      padding: 32px 32px 30px;
+    }
+  }
+
+  .formulaire h3 {
+    margin: -10px 56px 0 0;
+    color: var(--texte);
+    font-size: 1.7rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+
+  .formulaire .sur-titre {
+    margin: 0;
+  }
+
+  .explication {
+    margin: -6px 0 0;
+    font-size: 0.95rem;
+  }
+
+  .requis {
+    color: var(--gris);
+    font-size: 0.82rem;
+    font-weight: 400;
+  }
+
+  /* Les 5 étoiles à toucher */
+  .choix-note {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .choix-note legend {
+    width: 100%;
+    margin-bottom: 6px;
+    padding: 0;
+    color: var(--texte);
+    font-weight: 700;
+  }
+
+  .choix-note label {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    color: rgba(18, 20, 28, 0.2);
+    font-size: 2rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .choix-note input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .choix-note label:has(input:focus-visible) {
+    outline: 3px solid var(--rouge);
+    outline-offset: 2px;
+  }
+
+  .choix-note[data-note="1"] label:nth-of-type(-n + 1),
+  .choix-note[data-note="2"] label:nth-of-type(-n + 2),
+  .choix-note[data-note="3"] label:nth-of-type(-n + 3),
+  .choix-note[data-note="4"] label:nth-of-type(-n + 4),
+  .choix-note[data-note="5"] label:nth-of-type(-n + 5) {
+    color: #B8860B;
+  }
+
+  .champ {
+    display: grid;
+    gap: 6px;
+  }
+
+  .champ > span:first-child {
+    color: var(--texte);
+    font-weight: 700;
+  }
+
+  .champ input,
+  .champ textarea {
+    width: 100%;
+    min-height: 48px;
+    padding: 12px 14px;
+    border: 1.5px solid rgba(18, 20, 28, 0.2);
+    border-radius: 14px;
+    background: #fff;
+    color: var(--texte);
+    font: inherit;
+  }
+
+  .champ textarea {
+    resize: vertical;
+  }
+
+  .champ input:focus,
+  .champ textarea:focus {
+    border-color: var(--rouge);
+    outline: 3px solid var(--rouge-pale);
+  }
+
+  .compteur {
+    justify-self: end;
+    font-family: var(--police-mono);
+    font-size: 0.78rem;
+  }
+
+  /* Piège à robots, invisible pour les personnes */
+  .piege {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  .etat {
+    margin: 0;
+    color: var(--texte);
+    font-weight: 700;
+  }
+
+  .etat:empty {
+    display: none;
+  }
+
+  .secours {
+    margin: -8px 0 0;
+  }
+
+  .secours[hidden] {
+    display: none;
+  }
+
+  .secours a {
+    color: var(--rouge);
+    font-weight: 700;
+  }
+
+  .boutons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .boutons .btn[disabled] {
+    opacity: 0.6;
+    cursor: wait;
+  }
+
+  /* Bouton à contour sombre, sur le fond clair du formulaire */
+  .annuler {
+    border-color: rgba(18, 20, 28, 0.25);
+    background: transparent;
+    color: var(--texte);
+  }
+
+  .annuler:hover {
+    background: rgba(18, 20, 28, 0.06);
   }
 </style>
