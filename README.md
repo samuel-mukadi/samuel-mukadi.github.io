@@ -26,8 +26,14 @@ Une seule page, pensée d'abord pour le téléphone :
   le publier ; pour le refuser, menu ⋮ du document > « Supprimer le document » (et non « Supprimer
   les champs »). Envoi **idempotent** : un avis renvoyé plusieurs fois (mauvaise connexion) garde le
   même identifiant, il n'arrive qu'une fois et ne donne qu'un e-mail. Sans Firebase, le bouton ouvre WhatsApp.
-- **Contact** : on choisit son besoin et pour quand ; le bouton WhatsApp s'ouvre avec le message
-  déjà écrit. Aussi l'e-mail et GitHub.
+- **Contact** : on choisit son besoin, pour quand, puis **comment écrire : par e-mail ou sur WhatsApp**.
+  - Par e-mail : nom, e-mail et message partent par le messager Web3Forms. Samuel reçoit un e-mail
+    et répond depuis Gmail avec « Répondre » (la réponse va directement à la personne).
+    Pas de double envoi : le bouton est bloqué pendant l'envoi, et le même message renvoyé ne repart
+    pas. S'il repart quand même après une coupure, il garde la même référence dans l'objet : Gmail
+    range les deux ensemble.
+  - Sur WhatsApp : WhatsApp s'ouvre avec le message déjà écrit. Rien ne part sans la personne.
+  - L'adresse e-mail et GitHub restent affichés en dessous.
 - **Bas de page** : mes contacts, mon nom en grand, le menu.
 - Un **rond WhatsApp** reste en bas à droite de l'écran pendant la lecture.
 
@@ -41,7 +47,8 @@ bloc de contact à choisir). Aucun texte, image ou code n'en est copié.
 - Couleurs « Nuit et rouge » : nuit `#12141C`, rouge `#C62828` (le rouge de Sangona),
   or `#F5B841`, bordeaux `#4A0F14`, crème `#FFF7F0`.
 - Sécurité : la page n'accepte que ses propres fichiers (règle « Content-Security-Policy »),
-  aucun script venu d'ailleurs, aucun formulaire envoyé. Le numéro WhatsApp n'est pas affiché en texte (il reste dans le lien WhatsApp).
+  aucun script venu d'ailleurs. Les formulaires (avis, contact) ne partent que vers Firebase et
+  Web3Forms. Le numéro WhatsApp n'est pas affiché en texte (il reste dans le lien WhatsApp).
 - Pour les personnes qui préfèrent moins de mouvement (réglage du téléphone), les animations
   s'arrêtent et les cartes ne défilent pas toutes seules.
 
@@ -64,7 +71,7 @@ Puis ouvrir l'adresse affichée (en général http://localhost:4321).
 | les 3 projets (et la démo)             | `src/data/projets.js`               |
 | les avis reçus autrement (WhatsApp…)   | `src/data/avis.js`                  |
 | les avis en direct (projet Firebase)   | `src/data/firebase.js` ; règles : `firebase/firestore.rules` |
-| l'e-mail qui me prévient d'un avis     | `src/data/web3forms.js` (la clé reçue de web3forms.com) |
+| le messager e-mail (avis et Contact)   | `src/data/web3forms.js` (la clé reçue de web3forms.com) |
 | WhatsApp, e-mail, GitHub               | `src/data/contact.js`               |
 | les couleurs et les boutons            | `src/styles/global.css`             |
 | les images des projets                 | `public/images/`                    |

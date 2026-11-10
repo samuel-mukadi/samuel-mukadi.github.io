@@ -1,9 +1,13 @@
 ---
 // Contact (bloc rouge aux coins arrondis, posé sur la section d'avant).
-// La personne choisit ce qu'elle veut et pour quand : le bouton WhatsApp
-// s'ouvre avec un message déjà écrit. Rien n'est envoyé sans elle.
+// La personne choisit ce qu'elle veut, pour quand, puis PAR OÙ m'écrire :
+// - « Par e-mail » : son nom, son e-mail et son message partent par le messager
+//   Web3Forms (clé dans src/data/web3forms.js). Je réponds depuis Gmail avec « Répondre ».
+//   Sans clé, son application d'e-mail s'ouvre avec le message déjà écrit.
+// - « Sur WhatsApp » : WhatsApp s'ouvre avec le message déjà écrit. Rien n'est envoyé sans elle.
 // Le numéro n'est pas affiché en texte sur la page (il reste dans le lien wa.me).
 import { contact } from '../data/contact.js';
+import { web3forms } from '../data/web3forms.js';
 
 const { whatsapp, email, github } = contact;
 
@@ -30,18 +34,18 @@ const delais = [
         Parlons de <span class="italique souligne">votre projet</span>
       </h2>
       <p class="intro">
-        Une idée, une question ou une collaboration ? Écrivez-moi, je vous réponds
-        avec plaisir.
+        Une idée, une question ou une collaboration ? Écrivez-moi par e-mail ou sur
+        WhatsApp, comme vous préférez. Je vous réponds avec plaisir.
       </p>
     </div>
 
-    <div class="droite surgit s1" data-choix>
+    <form class="droite surgit s1" data-contact data-messager={web3forms.cle} data-adresse={email}>
       <fieldset>
         <legend class="sur-titre">C'est pour…</legend>
         <div class="tuiles">
           {besoins.map((b) => (
             <label class="tuile">
-              <input type="radio" name="besoin" value={b.message} />
+              <input type="radio" name="besoin" value={b.message} data-nom={b.nom} />
               <span class="tuile-nom">{b.nom}</span>
               <span class="coche" aria-hidden="true"></span>
               <span aria-hidden="true">
@@ -80,15 +84,72 @@ const delais = [
         <div class="puces">
           {delais.map((d) => (
             <label class="puce">
-              <input type="radio" name="delai" value={d.message} />
+              <input type="radio" name="delai" value={d.message} data-nom={d.nom} />
               <span>{d.nom}</span>
             </label>
           ))}
         </div>
       </fieldset>
 
+      {/* Le choix de la personne : par e-mail ou sur WhatsApp */}
+      <fieldset>
+        <legend class="sur-titre">Comment m'écrire ?</legend>
+        <div class="canaux">
+          <label class="canal">
+            <input type="radio" name="canal" value="email" checked />
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="5" width="18" height="14" rx="2.5" />
+              <path d="m4 7 8 6 8-6" />
+            </svg>
+            <span>Par e-mail</span>
+          </label>
+          <label class="canal">
+            <input type="radio" name="canal" value="whatsapp" />
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3.5 20.5 5 16a8.5 8.5 0 1 1 3.2 3.2Z" />
+              <path d="M9.2 8.6c.2-.4.6-.5.9-.3l.9 1.6c.1.3 0 .6-.2.8l-.5.5a6 6 0 0 0 2.6 2.6l.5-.5c.2-.2.5-.3.8-.2l1.6.9c.3.2.4.6.2.9-.5 1-1.6 1.4-2.6 1a9 9 0 0 1-5.2-5.2c-.4-1 0-2 1-2.1Z" />
+            </svg>
+            <span>Sur WhatsApp</span>
+          </label>
+        </div>
+      </fieldset>
+
+      {/* Seulement pour l'e-mail : de quoi pouvoir répondre à la personne */}
+      <fieldset class="champs" data-champs-email>
+        <legend class="cache-visuel">Vos coordonnées et votre message</legend>
+        <label class="champ">
+          <span>Votre nom</span>
+          <input type="text" name="nom" required minlength="2" maxlength="60" autocomplete="name" />
+        </label>
+
+        <label class="champ">
+          <span>Votre e-mail</span>
+          <input type="email" name="email" required maxlength="120" autocomplete="email" inputmode="email" placeholder="vous@exemple.com" />
+        </label>
+
+        <label class="champ">
+          <span>Votre message</span>
+          <textarea name="message" rows="5" required minlength="10" maxlength="1500" data-message></textarea>
+          <span class="compteur" data-compteur aria-live="polite">0 / 1500</span>
+        </label>
+
+        {/* Piège à robots : caché aux personnes, les robots le remplissent */}
+        <div class="piege" aria-hidden="true">
+          <label>Ne pas remplir <input type="text" name="site" tabindex="-1" autocomplete="off" /></label>
+        </div>
+      </fieldset>
+
       <div class="envoi">
-        <a class="btn btn--nuit btn--fleche" href={whatsapp} data-lien-whatsapp target="_blank" rel="noopener noreferrer">
+        <button type="submit" class="btn btn--nuit btn--fleche" data-bouton-email>
+          <span data-texte-bouton>Envoyer par e-mail</span>
+          <span class="rond-fleche" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          </span>
+        </button>
+
+        <a class="btn btn--nuit btn--fleche" href={whatsapp} data-lien-whatsapp target="_blank" rel="noopener noreferrer" hidden>
           Envoyer sur WhatsApp
           <span class="rond-fleche rond-vert" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -97,44 +158,206 @@ const delais = [
             </svg>
           </span>
         </a>
-        <a class="lien-email" href={`mailto:${email}`} data-lien-email>ou par e-mail</a>
       </div>
 
-      <p class="apercu" data-apercu aria-live="polite"></p>
+      <p class="rassure" data-rassure>
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="5" y="11" width="14" height="10" rx="2" />
+          <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+        </svg>
+        Votre e-mail sert seulement à vous répondre. Il n'est ni affiché, ni partagé.
+      </p>
+
+      <p class="etat" data-etat role="status" aria-live="polite"></p>
+
+      <p class="apercu" data-apercu aria-live="polite" hidden></p>
 
       <p class="adresse">
         Mon e-mail : {email}<span aria-hidden="true">&nbsp;·&nbsp;</span><a href={github} target="_blank" rel="noopener noreferrer">Mon GitHub</a>
       </p>
-    </div>
+    </form>
   </div>
 </section>
 
 <script>
-  // Prépare le message WhatsApp (et l'e-mail) selon les choix de la personne.
-  const choix = document.querySelector<HTMLElement>('[data-choix]');
+  // Le bloc Contact : par e-mail (messager Web3Forms) ou sur WhatsApp, au choix de la personne.
+  const formulaire = document.querySelector<HTMLFormElement>('[data-contact]');
 
-  if (choix) {
-    const lienWhatsApp = choix.querySelector<HTMLAnchorElement>('[data-lien-whatsapp]')!;
-    const lienEmail = choix.querySelector<HTMLAnchorElement>('[data-lien-email]')!;
-    const apercu = choix.querySelector<HTMLElement>('[data-apercu]')!;
+  if (formulaire) {
+    const cle = formulaire.dataset.messager ?? '';
+    const adresse = formulaire.dataset.adresse ?? '';
+    const lienWhatsApp = formulaire.querySelector<HTMLAnchorElement>('[data-lien-whatsapp]')!;
+    const boutonEmail = formulaire.querySelector<HTMLButtonElement>('[data-bouton-email]')!;
+    const texteBouton = formulaire.querySelector<HTMLElement>('[data-texte-bouton]')!;
+    const champsEmail = formulaire.querySelector<HTMLFieldSetElement>('[data-champs-email]')!;
+    const zoneMessage = formulaire.querySelector<HTMLTextAreaElement>('[data-message]')!;
+    const compteur = formulaire.querySelector<HTMLElement>('[data-compteur]')!;
+    const rassure = formulaire.querySelector<HTMLElement>('[data-rassure]')!;
+    const etat = formulaire.querySelector<HTMLElement>('[data-etat]')!;
+    const apercu = formulaire.querySelector<HTMLElement>('[data-apercu]')!;
     const baseWhatsApp = lienWhatsApp.href;
-    const baseEmail = lienEmail.href;
 
-    const valeur = (nom: string) =>
-      choix.querySelector<HTMLInputElement>(`input[name="${nom}"]:checked`)?.value ?? '';
-
-    const preparer = () => {
-      const besoin = valeur('besoin');
-      const delai = valeur('delai');
-      if (!besoin && !delai) return;
-      const message = `Bonjour Samuel${besoin ? `, ${besoin}.` : '.'}${delai ? ` ${delai}` : ''}`;
-      lienWhatsApp.href = `${baseWhatsApp}?text=${encodeURIComponent(message)}`;
-      lienEmail.href =
-        `${baseEmail}?subject=${encodeURIComponent('Mon projet')}&body=${encodeURIComponent(message)}`;
-      apercu.textContent = `Votre message : « ${message} »`;
+    // Petite mémoire du navigateur (peut être bloquée : on fait sans, sans erreur)
+    const memoire = {
+      lire: (nom: string) => { try { return localStorage.getItem(nom); } catch { return null; } },
+      ecrire: (nom: string, valeur: string) => { try { localStorage.setItem(nom, valeur); } catch { /* rien */ } },
     };
 
-    choix.addEventListener('change', preparer);
+    const coche = (nom: string) =>
+      formulaire.querySelector<HTMLInputElement>(`input[name="${nom}"]:checked`);
+    const parEmail = () => coche('canal')?.value !== 'whatsapp';
+
+    const dire = (texte: string, ton: 'ok' | 'erreur' | '' = '') => {
+      etat.textContent = texte;
+      etat.dataset.ton = ton;
+    };
+
+    // Le message déjà écrit selon les choix (pour WhatsApp, ou l'e-mail de secours)
+    const messagePrepare = () => {
+      const besoin = coche('besoin')?.value ?? '';
+      const delai = coche('delai')?.value ?? '';
+      const texte = zoneMessage.value.trim();
+      if (!besoin && !delai && !texte) return '';
+      const debut = `Bonjour Samuel${besoin ? `, ${besoin}.` : '.'}${delai ? ` ${delai}` : ''}`;
+      return texte ? `${debut}\n\n${texte}` : debut;
+    };
+
+    const preparer = () => {
+      const message = messagePrepare();
+      lienWhatsApp.href = message ? `${baseWhatsApp}?text=${encodeURIComponent(message)}` : baseWhatsApp;
+      apercu.textContent = message ? `Votre message : « ${message} »` : '';
+      compteur.textContent = `${zoneMessage.value.length} / 1500`;
+    };
+
+    // Montre ce qu'il faut selon « Par e-mail » ou « Sur WhatsApp »
+    const montrerCanal = () => {
+      const email = parEmail();
+      champsEmail.hidden = !email;
+      champsEmail.disabled = !email;
+      boutonEmail.hidden = !email;
+      rassure.hidden = !email;
+      lienWhatsApp.hidden = email;
+      apercu.hidden = email;
+    };
+
+    formulaire.addEventListener('change', (e) => {
+      if ((e.target as HTMLInputElement).name === 'canal') {
+        dire('');
+        montrerCanal();
+      }
+      preparer();
+    });
+    zoneMessage.addEventListener('input', preparer);
+
+    // Un robot remplit tout en moins d'une seconde : on note quand la personne commence
+    let debut = 0;
+    formulaire.addEventListener('focusin', () => { if (!debut) debut = Date.now(); });
+
+    // Une référence qui ne dépend que du message : le même message envoyé deux fois
+    // (mauvaise connexion) arrive avec le même objet, et Gmail les range ensemble.
+    const reference = (texte: string) => {
+      let h = 0x811c9dc5;
+      for (let i = 0; i < texte.length; i++) {
+        h ^= texte.charCodeAt(i);
+        h = Math.imul(h, 0x01000193);
+      }
+      return (h >>> 0).toString(36).toUpperCase().padStart(7, '0');
+    };
+
+    let enCours = false;
+
+    formulaire.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!parEmail() || enCours) return; // un seul envoi à la fois
+
+      const donnees = new FormData(formulaire);
+      const nom = String(donnees.get('nom') ?? '').trim();
+      const email = String(donnees.get('email') ?? '').trim();
+      const message = String(donnees.get('message') ?? '').trim();
+      const besoin = coche('besoin')?.dataset.nom ?? 'Pas précisé';
+      const delai = coche('delai')?.dataset.nom ?? 'Pas précisé';
+
+      if (nom.length < 2) return dire('Écrivez votre nom (au moins 2 lettres).', 'erreur');
+      if (message.length < 10) return dire('Écrivez votre message (au moins 10 lettres).', 'erreur');
+
+      // Robot (champ caché rempli) : on fait comme si c'était parti, sans rien envoyer
+      if (donnees.get('site')) {
+        formulaire.reset();
+        montrerCanal();
+        preparer();
+        return dire('Merci ! Votre message est bien parti.', 'ok');
+      }
+
+      if (!debut || Date.now() - debut < 3000) return dire('Patientez une seconde…');
+
+      // Pas de messager réglé : l'application d'e-mail de la personne s'ouvre
+      if (!cle) {
+        window.location.href =
+          `mailto:${adresse}?subject=${encodeURIComponent('Mon projet')}&body=${encodeURIComponent(messagePrepare())}`;
+        return;
+      }
+
+      const ref = reference(`${nom}|${email}|${message}`.toLowerCase());
+      if (memoire.lire('contact-envoye') === ref) {
+        return dire("Ce message m'est déjà bien arrivé. Merci !", 'ok');
+      }
+
+      enCours = true;
+      let reussi = false;
+      boutonEmail.disabled = true;
+      texteBouton.textContent = 'Envoi en cours…';
+      dire('');
+      const minuteur = new AbortController();
+      const delaiMax = setTimeout(() => minuteur.abort(), 20000);
+
+      try {
+        const reponse = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          signal: minuteur.signal,
+          body: JSON.stringify({
+            access_key: cle,
+            subject: `Nouveau message de ${nom}${besoin !== 'Pas précisé' ? ` : ${besoin}` : ''} (réf. ${ref})`,
+            from_name: 'Mon portfolio',
+            replyto: email,
+            Nom: nom,
+            'Son e-mail': email,
+            "C'est pour": besoin,
+            'Pour quand': delai,
+            Message: message,
+            'Pour répondre': 'Clique sur « Répondre » : ta réponse part directement à cette personne.',
+            Référence: ref,
+          }),
+        });
+        const corps = await reponse.json().catch(() => ({}));
+        if (!reponse.ok || !corps.success) throw new Error(`messager ${reponse.status}`);
+
+        reussi = true;
+        memoire.ecrire('contact-envoye', ref);
+        formulaire.reset();
+        montrerCanal();
+        preparer();
+        const prenom = nom.split(/\s+/)[0];
+        dire(`Merci ${prenom} ! Votre message est bien parti. Je vous réponds par e-mail au plus vite.`, 'ok');
+      } catch {
+        dire(
+          "Le message n'est pas parti (problème de connexion ?). Réessayez dans un instant, ou choisissez « Sur WhatsApp » juste au-dessus.",
+          'erreur',
+        );
+      } finally {
+        clearTimeout(delaiMax);
+        texteBouton.textContent = 'Envoyer par e-mail';
+        // Après un envoi réussi, le bouton se repose 2 secondes : un clic de trop
+        // (personne pressée) ne fait pas apparaître « Veuillez remplir ce champ ».
+        setTimeout(() => {
+          enCours = false;
+          boutonEmail.disabled = false;
+        }, reussi ? 2000 : 0);
+      }
+    });
+
+    montrerCanal();
+    preparer();
   }
 </script>
 
@@ -159,6 +382,11 @@ const delais = [
       padding: 112px 0 120px;
       border-radius: 44px 44px 0 0;
     }
+  }
+
+  /* Ce qui est caché reste caché, même un bouton */
+  .contact [hidden] {
+    display: none !important;
   }
 
   .grille {
@@ -204,6 +432,7 @@ const delais = [
   }
 
   fieldset {
+    min-width: 0;
     margin: 0 0 28px;
     padding: 0;
     border: 0;
@@ -211,6 +440,16 @@ const delais = [
 
   legend {
     padding: 0;
+  }
+
+  /* Pour les lecteurs d'écran seulement */
+  .cache-visuel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 
   /* Les tuiles à choisir */
@@ -257,14 +496,16 @@ const delais = [
   }
 
   .tuile:has(input:focus-visible),
-  .puce:has(input:focus-visible) {
+  .puce:has(input:focus-visible),
+  .canal:has(input:focus-visible) {
     outline: 3px solid #fff;
     outline-offset: 3px;
   }
 
   /* Le vrai bouton radio est caché, mais reste utilisable au clavier */
   .tuile input,
-  .puce input {
+  .puce input,
+  .canal input {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -334,6 +575,117 @@ const delais = [
     color: var(--rouge);
   }
 
+  /* « Comment m'écrire ? » : deux grands choix côte à côte */
+  .canaux {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .canal {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 56px;
+    padding: 0 8px;
+    border: 1.5px solid rgba(255, 255, 255, 0.5);
+    border-radius: 18px;
+    font-weight: 800;
+    text-align: center;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.25s var(--courbe);
+  }
+
+  .canal:hover {
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  .canal:active {
+    transform: scale(0.97);
+  }
+
+  .canal svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+
+  .canal:has(input:checked) {
+    border-color: var(--nuit);
+    background: var(--nuit);
+  }
+
+  .canal:has(input[value='whatsapp']:checked) svg {
+    color: #4ADE80;
+  }
+
+  .canal:has(input[value='email']:checked) svg {
+    color: var(--or);
+  }
+
+  /* Les champs de l'e-mail */
+  .champs {
+    display: grid;
+    gap: 16px;
+  }
+
+  .champ {
+    display: grid;
+    gap: 6px;
+  }
+
+  .champ > span:first-child {
+    font-weight: 700;
+  }
+
+  .champ input,
+  .champ textarea {
+    width: 100%;
+    min-height: 52px;
+    padding: 13px 16px;
+    border: 2px solid transparent;
+    border-radius: 14px;
+    background: #fff;
+    color: var(--nuit);
+    font: inherit;
+    font-size: max(1rem, 16px); /* pas de zoom automatique sur iPhone */
+  }
+
+  .champ textarea {
+    min-height: 132px;
+    resize: vertical;
+  }
+
+  .champ input::placeholder {
+    color: #8A8D96;
+  }
+
+  .champ input:focus,
+  .champ textarea:focus {
+    border-color: var(--nuit);
+    outline: 3px solid var(--or);
+    outline-offset: 0;
+  }
+
+  .compteur {
+    justify-self: end;
+    font-family: var(--police-mono);
+    font-size: 0.78rem;
+    opacity: 0.85;
+  }
+
+  /* Piège à robots, invisible pour les personnes */
+  .piege {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
   /* L'envoi */
   .envoi {
     display: flex;
@@ -347,21 +699,50 @@ const delais = [
     padding-left: 26px;
   }
 
+  .envoi .btn:disabled {
+    cursor: wait;
+    opacity: 0.75;
+  }
+
   .rond-vert {
     background: var(--whatsapp);
   }
 
-  .lien-email {
-    display: inline-flex;
-    align-items: center;
-    min-height: 44px;
-    color: #fff;
-    font-weight: 700;
-    text-underline-offset: 4px;
+  .rassure {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    max-width: 460px;
+    margin: 16px 0 0;
+    font-size: 0.9rem;
   }
 
-  .lien-email:active {
+  .rassure svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    margin-top: 2px;
     color: var(--or);
+  }
+
+  .etat {
+    margin: 18px 0 0;
+    padding: 12px 16px;
+    border-radius: 14px;
+    background: rgba(0, 0, 0, 0.18);
+    font-weight: 700;
+  }
+
+  .etat[data-ton='ok'] {
+    background: var(--nuit);
+  }
+
+  .etat[data-ton='erreur'] {
+    border: 2px solid var(--or);
+  }
+
+  .etat:empty {
+    display: none;
   }
 
   .apercu {
@@ -370,6 +751,8 @@ const delais = [
     border-radius: 14px;
     background: rgba(0, 0, 0, 0.14);
     font-size: 0.95rem;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
   }
 
   .apercu:empty {
