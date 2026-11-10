@@ -1,6 +1,6 @@
 # Samuel Mukadi — portfolio
 
-Le site de présentation de **Samuel Mukadi**, chef de projet digital et orchestrateur d'IA.
+Le site de présentation de **Samuel Mukadi**, développeur, chef de projet digital et orchestrateur d'IA.
 
 Il sera publié à l'adresse **https://samuel-mukadi.github.io** (GitHub Pages, avec le https).
 
