@@ -6,6 +6,8 @@
 //    la base Firestore (Firebase) EN ATTENTE (valide = false). Il ne s'affiche qu'une fois
 //    que Samuel l'a validé dans la console Firebase (valide = true).
 //    Réglages : src/data/firebase.js ; protections : firebase/firestore.rules.
+//    À chaque nouvel avis, le messager Web3Forms (src/data/web3forms.js) envoie un e-mail à
+//    Samuel avec l'avis et un lien direct vers lui dans la console Firebase.
 // 2. Les avis reçus autrement (WhatsApp…), ajoutés à la main dans src/data/avis.js.
 //
 // Tant que Firebase n'est pas réglé, le bouton « Donner mon avis » ouvre WhatsApp.
@@ -13,6 +15,7 @@
 import { avis } from '../data/avis.js';
 import { contact } from '../data/contact.js';
 import { firebase } from '../data/firebase.js';
+import { web3forms } from '../data/web3forms.js';
 
 const enDirect = Boolean(firebase.projet);
 const total = avis.length;
@@ -46,6 +49,7 @@ const cinq = [1, 2, 3, 4, 5];
   data-avis-section
   data-projet={firebase.projet}
   data-cle={firebase.cle}
+  data-messager={web3forms.cle}
   data-fixes={JSON.stringify(avis)}
 >
   <div class="conteneur grille">
@@ -314,6 +318,33 @@ const cinq = [1, 2, 3, 4, 5];
       };
       charger();
 
+      // Le messager : un e-mail à Samuel pour chaque nouvel avis en attente, avec un lien
+      // direct vers l'avis dans la console Firebase (pour le lire, le valider ou le supprimer).
+      // S'il ne répond pas, tant pis : l'avis attend quand même dans Firebase.
+      const cleMessager = section.dataset.messager;
+      const prevenir = (id: string, a: UnAvis) => {
+        if (!cleMessager) return;
+        const lienDirect =
+          `https://console.firebase.google.com/project/${projet}/firestore/databases/-default-/data/~2Favis~2F${id}`;
+        fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          keepalive: true,
+          body: JSON.stringify({
+            access_key: cleMessager,
+            subject: `Nouvel avis en attente : ${a.nom} (${a.note}/5)`,
+            from_name: 'Mon portfolio',
+            Nom: a.nom,
+            'Ce que la personne fait': a.role || '(pas précisé)',
+            Note: `${'★'.repeat(a.note)}${'☆'.repeat(5 - a.note)} (${a.note} sur 5)`,
+            Avis: a.texte,
+            'Lien direct vers cet avis': lienDirect,
+            'Pour le publier': 'Ouvre le lien, puis change le champ « valide » de faux (false) à vrai (true).',
+            'Pour le refuser': 'Ouvre le lien, puis supprime le document.',
+          }),
+        }).catch(() => { /* rien */ });
+      };
+
       // Le bouton ouvre le formulaire au lieu de WhatsApp
       const bouton = section.querySelector<HTMLAnchorElement>('[data-donner-avis]')!;
       section.querySelector('[data-note-action]')!.textContent =
@@ -361,6 +392,28 @@ const cinq = [1, 2, 3, 4, 5];
         return Array.from(crypto.getRandomValues(new Uint8Array(20)), (n) => lettres[n % lettres.length]).join('');
       };
 
+      // IDEMPOTENCE : un avis = un seul identifiant, gardé (même après rechargement de la page)
+      // tant que l'envoi n'a pas réussi. Si la connexion coupe et que la personne réessaie,
+      // c'est LE MÊME avis qui repart : Firebase refuse de l'écrire deux fois, donc Samuel
+      // ne reçoit qu'un seul avis et un seul e-mail, même après plusieurs essais.
+      const memoire = {
+        lire: (cle: string) => { try { return localStorage.getItem(cle); } catch { return null; } },
+        ecrire: (cle: string, valeur: string) => { try { localStorage.setItem(cle, valeur); } catch { /* rien */ } },
+        oublier: (cle: string) => { try { localStorage.removeItem(cle); } catch { /* rien */ } },
+      };
+      let idMemoire: string | null = null;
+      const idDeCetAvis = () => {
+        const garde = idMemoire ?? memoire.lire('avis-id');
+        idMemoire = garde && /^[A-Za-z0-9]{20}$/.test(garde) ? garde : idAuHasard();
+        memoire.ecrire('avis-id', idMemoire);
+        return idMemoire;
+      };
+      // « Incertain » : un envoi est parti mais la réponse n'est jamais revenue (coupure).
+      // L'avis est peut-être déjà arrivé chez Firebase.
+      let incertainMemoire = false;
+      const envoiIncertain = () => incertainMemoire || memoire.lire('avis-incertain') === '1';
+      const noterIncertain = () => { incertainMemoire = true; memoire.ecrire('avis-incertain', '1'); };
+
       formulaire.addEventListener('submit', async (e) => {
         e.preventDefault();
         const donnees = new FormData(formulaire);
@@ -396,42 +449,74 @@ const cinq = [1, 2, 3, 4, 5];
 
         publier.disabled = true;
         etat.textContent = 'Envoi en cours…';
-        const id = idAuHasard();
-        try {
-          const reponse = await fetch(`${base}:commit${suffixe ? '?' + suffixe : ''}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              writes: [{
-                update: {
-                  name: `projects/${projet}/databases/(default)/documents/avis/${id}`,
-                  fields: {
-                    nom: { stringValue: nom },
-                    role: { stringValue: role },
-                    note: { integerValue: String(note) },
-                    texte: { stringValue: texte },
-                    valide: { booleanValue: false },
-                  },
-                },
-                updateTransforms: [{ fieldPath: 'date', setToServerValue: 'REQUEST_TIME' }],
-              }],
-            }),
-          });
-          if (!reponse.ok) {
-            // On garde la raison donnée par Firebase (ex. PERMISSION_DENIED) pour comprendre le refus
-            let raison = String(reponse.status);
-            try {
-              const erreur = await reponse.json();
-              raison = `${reponse.status} ${erreur?.error?.status ?? ''}`.trim();
-            } catch { /* rien */ }
-            throw new Error(raison);
-          }
-          try { localStorage.setItem('avis-publie', '1'); } catch { /* rien */ }
+        const id = idDeCetAvis();
+        const dejaParti = envoiIncertain();
+
+        // Tout s'est bien passé (ou l'avis était déjà arrivé lors d'un essai précédent)
+        const reussi = () => {
+          memoire.ecrire('avis-publie', '1');
+          memoire.oublier('avis-id');
+          memoire.oublier('avis-incertain');
+          idMemoire = null;
+          incertainMemoire = false;
+          prevenir(id, { nom, role, note, texte });
           formulaire.reset();
           choixNote.dataset.note = '';
           compteur.textContent = '0 / 400';
           etat.textContent = 'Merci ! Votre avis sera affiché après validation.';
           setTimeout(() => fiche.close(), 1600);
+        };
+
+        // Sans réponse au bout de 20 secondes, on arrête d'attendre (connexion trop faible)
+        const minuteur = new AbortController();
+        const delai = setTimeout(() => minuteur.abort(), 20000);
+        try {
+          let reponse: Response;
+          try {
+            reponse = await fetch(`${base}:commit${suffixe ? '?' + suffixe : ''}`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              signal: minuteur.signal,
+              body: JSON.stringify({
+                writes: [{
+                  update: {
+                    name: `projects/${projet}/databases/(default)/documents/avis/${id}`,
+                    fields: {
+                      nom: { stringValue: nom },
+                      role: { stringValue: role },
+                      note: { integerValue: String(note) },
+                      texte: { stringValue: texte },
+                      valide: { booleanValue: false },
+                    },
+                  },
+                  // Jamais d'écrasement : si cet identifiant existe déjà, Firebase refuse
+                  currentDocument: { exists: false },
+                  updateTransforms: [{ fieldPath: 'date', setToServerValue: 'REQUEST_TIME' }],
+                }],
+              }),
+            });
+          } catch (coupure) {
+            // La demande est peut-être arrivée : au prochain essai, on renverra le même avis
+            noterIncertain();
+            throw coupure;
+          }
+          if (reponse.ok) {
+            reussi();
+            return;
+          }
+          // On garde la raison donnée par Firebase (ex. PERMISSION_DENIED) pour comprendre le refus
+          let statut = '';
+          try {
+            const erreur = await reponse.json();
+            statut = erreur?.error?.status ?? '';
+          } catch { /* rien */ }
+          // Refus « déjà là » après une coupure : c'est notre propre avis, arrivé au premier essai
+          const dejaLa = ['ALREADY_EXISTS', 'FAILED_PRECONDITION', 'PERMISSION_DENIED'].includes(statut);
+          if (dejaParti && dejaLa) {
+            reussi();
+            return;
+          }
+          throw new Error(`${reponse.status} ${statut}`.trim());
         } catch (erreur) {
           const raison = erreur instanceof Error && /^\d/.test(erreur.message) ? ` (code ${erreur.message})` : '';
           etat.textContent = raison
@@ -439,6 +524,7 @@ const cinq = [1, 2, 3, 4, 5];
             : "Votre avis n'a pas pu être envoyé. Vérifiez votre connexion et réessayez.";
           secours.hidden = false;
         } finally {
+          clearTimeout(delai);
           publier.disabled = false;
         }
       });

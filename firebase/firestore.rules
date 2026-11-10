@@ -10,13 +10,16 @@ rules_version = '2';
 // - Le site ne peut LIRE que les avis VALIDÉS (valide = true).
 //   Pour valider : console Firebase > Firestore > avis > l'avis > champ « valide » → true.
 //   Pour refuser : supprimer l'avis dans la console.
-// - Personne ne peut MODIFIER ni SUPPRIMER un avis depuis le site.
+// - Personne ne peut MODIFIER ni SUPPRIMER un avis depuis le site. C'est aussi ce qui rend
+//   l'envoi IDEMPOTENT : un avis renvoyé plusieurs fois (même identifiant) n'est écrit qu'une fois.
 // - Tout le reste de la base est fermé.
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // (?s) : le « . » passe aussi les retours à la ligne, pour attraper un lien caché
+    // après un saut de ligne (essayé en vrai le 09/11 : bien refusé).
     function sansLien(texte) {
-      return !texte.lower().matches('.*(https?://|www[.]).*');
+      return !texte.lower().matches('(?s).*(https?://|www[.]).*');
     }
 
     function avisPropre(d) {

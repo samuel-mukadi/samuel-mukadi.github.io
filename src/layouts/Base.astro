@@ -2,6 +2,7 @@
 // Squelette commun à toutes les pages : en-tête HTML, titre, description.
 import '../styles/global.css';
 import { firebase } from '../data/firebase.js';
+import { web3forms } from '../data/web3forms.js';
 
 interface Props {
   titre: string;
@@ -13,8 +14,15 @@ const adresse = new URL(Astro.url.pathname, Astro.site);
 // L'image d'aperçu (1200 × 630) : refaite avec « node outils/fabriquer-image-apercu.mjs ».
 // Le « ?v=2 » oblige WhatsApp à reprendre la nouvelle image : l'augmenter à chaque changement.
 const imageApercu = new URL('/og-image.jpg?v=3', Astro.site);
-// Les avis en direct parlent à la base Firestore : seule adresse extérieure autorisée.
-const connexions = firebase.projet ? "'self' https://firestore.googleapis.com" : "'self'";
+// Seules adresses extérieures autorisées : la base des avis (Firestore) et le messager
+// qui me prévient par e-mail (Web3Forms), chacune seulement si elle est réglée.
+const connexions = [
+  "'self'",
+  firebase.projet && 'https://firestore.googleapis.com',
+  web3forms.cle && 'https://api.web3forms.com',
+]
+  .filter(Boolean)
+  .join(' ');
 ---
 
 <!doctype html>
@@ -23,7 +31,8 @@ const connexions = firebase.projet ? "'self' https://firestore.googleapis.com" :
     <meta charset="utf-8" />
     <!-- Sécurité : la page n'accepte que ses propres fichiers (scripts, styles, images).
          Aucun script venu d'ailleurs, aucun formulaire envoyé vers une autre page, aucune
-         intégration par <object> ou <base>. Seule exception : la base des avis (Firestore). -->
+         intégration par <object> ou <base>. Exceptions : la base des avis (Firestore) et le
+         messager qui me prévient par e-mail (Web3Forms). -->
     <meta
       http-equiv="Content-Security-Policy"
       content={`default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src ${connexions}; object-src 'none'; base-uri 'self'; form-action 'none'`}

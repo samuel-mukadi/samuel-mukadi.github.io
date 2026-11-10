@@ -21,8 +21,11 @@ Une seule page, pensée d'abord pour le téléphone :
 - **Avis** (« Ce qu'ils pensent de moi ») : seulement des avis vrais. Avec Firebase réglé,
   la personne remplit un petit formulaire ; son avis arrive **en attente** et ne s'affiche qu'après
   validation par Samuel dans la console Firebase (champ `valide` → `true`). Protégé par
-  `firebase/firestore.rules`. Sans Firebase,
-  le bouton ouvre WhatsApp.
+  `firebase/firestore.rules`. À chaque nouvel avis, Samuel reçoit un e-mail (messager Web3Forms)
+  avec l'avis et un **lien direct** vers lui dans la console : changer `valide` de faux à vrai pour
+  le publier ; pour le refuser, menu ⋮ du document > « Supprimer le document » (et non « Supprimer
+  les champs »). Envoi **idempotent** : un avis renvoyé plusieurs fois (mauvaise connexion) garde le
+  même identifiant, il n'arrive qu'une fois et ne donne qu'un e-mail. Sans Firebase, le bouton ouvre WhatsApp.
 - **Contact** : on choisit son besoin et pour quand ; le bouton WhatsApp s'ouvre avec le message
   déjà écrit. Aussi l'e-mail et GitHub.
 - **Bas de page** : mes contacts, mon nom en grand, le menu.
@@ -61,6 +64,7 @@ Puis ouvrir l'adresse affichée (en général http://localhost:4321).
 | les 3 projets (et la démo)             | `src/data/projets.js`               |
 | les avis reçus autrement (WhatsApp…)   | `src/data/avis.js`                  |
 | les avis en direct (projet Firebase)   | `src/data/firebase.js` ; règles : `firebase/firestore.rules` |
+| l'e-mail qui me prévient d'un avis     | `src/data/web3forms.js` (la clé reçue de web3forms.com) |
 | WhatsApp, e-mail, GitHub               | `src/data/contact.js`               |
 | les couleurs et les boutons            | `src/styles/global.css`             |
 | les images des projets                 | `public/images/`                    |
