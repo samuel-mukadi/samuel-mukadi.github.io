@@ -16,7 +16,7 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     function sansLien(texte) {
-      return !texte.lower().matches('(?s).*(https?://|www[.]).*');
+      return !texte.lower().matches('.*(https?://|www[.]).*');
     }
 
     function avisPropre(d) {
