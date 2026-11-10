@@ -370,9 +370,14 @@ const cinq = [1, 2, 3, 4, 5];
         const note = Number(donnees.get('note'));
         secours.hidden = true;
 
-        // Robot : on fait comme si c'était envoyé, sans rien envoyer
-        if (donnees.get('site') || Date.now() - ouvertA < 3000) {
+        // Robot (champ caché rempli) : on fait comme si c'était envoyé, sans rien envoyer
+        if (donnees.get('site')) {
           etat.textContent = 'Merci ! Votre avis sera affiché après validation.';
+          return;
+        }
+        // Envoi trop rapide : une vraie personne peut aller vite, on lui demande d'attendre
+        if (Date.now() - ouvertA < 3000) {
+          etat.textContent = 'Patientez une seconde, puis appuyez de nouveau sur « Envoyer ».';
           return;
         }
         if (dejaPublie()) {
@@ -408,20 +413,30 @@ const cinq = [1, 2, 3, 4, 5];
                     valide: { booleanValue: false },
                   },
                 },
-                currentDocument: { exists: false },
                 updateTransforms: [{ fieldPath: 'date', setToServerValue: 'REQUEST_TIME' }],
               }],
             }),
           });
-          if (!reponse.ok) throw new Error(String(reponse.status));
+          if (!reponse.ok) {
+            // On garde la raison donnée par Firebase (ex. PERMISSION_DENIED) pour comprendre le refus
+            let raison = String(reponse.status);
+            try {
+              const erreur = await reponse.json();
+              raison = `${reponse.status} ${erreur?.error?.status ?? ''}`.trim();
+            } catch { /* rien */ }
+            throw new Error(raison);
+          }
           try { localStorage.setItem('avis-publie', '1'); } catch { /* rien */ }
           formulaire.reset();
           choixNote.dataset.note = '';
           compteur.textContent = '0 / 400';
           etat.textContent = 'Merci ! Votre avis sera affiché après validation.';
           setTimeout(() => fiche.close(), 1600);
-        } catch {
-          etat.textContent = "Votre avis n'a pas pu être envoyé. Vérifiez votre connexion et réessayez.";
+        } catch (erreur) {
+          const raison = erreur instanceof Error && /^\d/.test(erreur.message) ? ` (code ${erreur.message})` : '';
+          etat.textContent = raison
+            ? `Votre avis n'a pas pu être enregistré${raison}. Réessayez plus tard.`
+            : "Votre avis n'a pas pu être envoyé. Vérifiez votre connexion et réessayez.";
           secours.hidden = false;
         } finally {
           publier.disabled = false;
