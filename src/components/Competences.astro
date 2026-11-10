@@ -1,5 +1,5 @@
 ---
-// Mes 4 compétences (fond sombre). La dernière est affichée « en apprentissage ».
+// Mes 5 compétences (fond sombre). La dernière est affichée « en apprentissage ».
 const competences = [
   {
     titre: 'Gestion de projet et conception',
@@ -17,9 +17,14 @@ const competences = [
     icone: 'git',
   },
   {
-    titre: 'Bases du web',
-    texte: 'HTML, CSS et JavaScript.',
+    titre: 'Développement web',
+    texte: 'HTML, CSS et JavaScript : des pages claires, adaptées au téléphone.',
     icone: 'web',
+  },
+  {
+    titre: "L'écosystème JavaScript et Python",
+    texte: 'Node.js, React, TypeScript, Astro et les autres outils JavaScript, ainsi que Python.',
+    icone: 'apprendre',
     apprentissage: true,
   },
 ];
@@ -66,6 +71,12 @@ const competences = [
                 <path d="M6 7.5v9M18 11.5c0 4-6 3-11 5.5" />
               </svg>
             )}
+            {c.icone === 'apprendre' && (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 5.5C3 4.7 3.7 4 4.5 4H10a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H4.5A1.5 1.5 0 0 1 3 16.5z" />
+                <path d="M21 5.5c0-.8-.7-1.5-1.5-1.5H14a2 2 0 0 0-2 2v14a2 2 0 0 1 2-2h5.5a1.5 1.5 0 0 0 1.5-1.5z" />
+              </svg>
+            )}
             {c.icone === 'web' && (
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                 <path d="m8 8-4 4 4 4M16 8l4 4-4 4M13.5 5l-3 14" />
@@ -93,15 +104,29 @@ const competences = [
     list-style: none;
   }
 
+  /* 5 cartes : la dernière prend toute la largeur sur 2 colonnes,
+     puis 3 en haut et 2 plus larges en bas sur grand écran */
   @media (min-width: 600px) {
     .cartes {
       grid-template-columns: repeat(2, 1fr);
+    }
+
+    .carte:last-child {
+      grid-column: 1 / -1;
     }
   }
 
   @media (min-width: 1000px) {
     .cartes {
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(6, 1fr);
+    }
+
+    .carte {
+      grid-column: span 2;
+    }
+
+    .carte:nth-child(n + 4) {
+      grid-column: span 3;
     }
   }
 

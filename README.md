@@ -16,7 +16,8 @@ Une seule page, pensée d'abord pour le téléphone :
 - **Qui suis-je ?** : mon histoire, ma photo dans le grand carré, mon équipe
   (je décide, Claude construit, Codex vérifie) et ma méthode en 4 étapes.
 - **Compétences** : gestion de projet et conception, orchestration d'IA, Git et GitHub,
-  bases du web (en apprentissage).
+  développement web (HTML, CSS, JavaScript) et, en apprentissage, Node.js, React, TypeScript,
+  Astro, l'écosystème JavaScript et Python.
 - **Avis** (« Ce qu'ils pensent de moi ») : seulement des avis vrais. Avec Firebase réglé,
   la personne remplit un petit formulaire et son avis s'affiche tout de suite (protégé par
   `firebase/firestore.rules` ; Samuel retire un avis dans la console Firebase). Sans Firebase,
