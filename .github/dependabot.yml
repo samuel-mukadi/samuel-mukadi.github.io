@@ -1,0 +1,13 @@
+# Dependabot : propose chaque semaine les mises à jour de sécurité
+# d'Astro (npm) et des actions GitHub utilisées pour publier le site.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

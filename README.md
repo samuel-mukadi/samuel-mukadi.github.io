@@ -19,8 +19,9 @@ Une seule page, pensée d'abord pour le téléphone :
   développement web (HTML, CSS, JavaScript) et, en apprentissage, Node.js, React, TypeScript,
   Astro, l'écosystème JavaScript et Python.
 - **Avis** (« Ce qu'ils pensent de moi ») : seulement des avis vrais. Avec Firebase réglé,
-  la personne remplit un petit formulaire et son avis s'affiche tout de suite (protégé par
-  `firebase/firestore.rules` ; Samuel retire un avis dans la console Firebase). Sans Firebase,
+  la personne remplit un petit formulaire ; son avis arrive **en attente** et ne s'affiche qu'après
+  validation par Samuel dans la console Firebase (champ `valide` → `true`). Protégé par
+  `firebase/firestore.rules`. Sans Firebase,
   le bouton ouvre WhatsApp.
 - **Contact** : on choisit son besoin et pour quand ; le bouton WhatsApp s'ouvre avec le message
   déjà écrit. Aussi l'e-mail et GitHub.
@@ -37,7 +38,7 @@ bloc de contact à choisir). Aucun texte, image ou code n'en est copié.
 - Couleurs « Nuit et rouge » : nuit `#12141C`, rouge `#C62828` (le rouge de Sangona),
   or `#F5B841`, bordeaux `#4A0F14`, crème `#FFF7F0`.
 - Sécurité : la page n'accepte que ses propres fichiers (règle « Content-Security-Policy »),
-  aucun script venu d'ailleurs, aucun formulaire envoyé. Le numéro WhatsApp n'est jamais écrit en clair.
+  aucun script venu d'ailleurs, aucun formulaire envoyé. Le numéro WhatsApp n'est pas affiché en texte (il reste dans le lien WhatsApp).
 - Pour les personnes qui préfèrent moins de mouvement (réglage du téléphone), les animations
   s'arrêtent et les cartes ne défilent pas toutes seules.
 

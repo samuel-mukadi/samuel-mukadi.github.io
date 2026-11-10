@@ -1,5 +1,6 @@
 // Mes moyens de contact, utilisés dans la section Contact et dans le bas de page.
-// Le numéro WhatsApp n'est jamais écrit en clair sur le site : seulement dans ce lien.
+// Le numéro WhatsApp n'est pas affiché en texte sur la page, mais il reste lisible
+// dans ce lien (et donc dans le code public) : c'est normal pour un lien WhatsApp.
 
 export const contact = {
   whatsapp: 'https://wa.me/243970079227',

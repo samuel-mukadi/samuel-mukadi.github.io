@@ -3,8 +3,9 @@
 //
 // Deux sources d'avis (seulement des avis vrais, jamais inventés) :
 // 1. Les avis EN DIRECT : la personne remplit le petit formulaire, son avis est rangé dans
-//    la base Firestore (Firebase) et s'affiche tout de suite. Réglages : src/data/firebase.js ;
-//    protections : firebase/firestore.rules. Samuel retire un avis dans la console Firebase.
+//    la base Firestore (Firebase) EN ATTENTE (valide = false). Il ne s'affiche qu'une fois
+//    que Samuel l'a validé dans la console Firebase (valide = true).
+//    Réglages : src/data/firebase.js ; protections : firebase/firestore.rules.
 // 2. Les avis reçus autrement (WhatsApp…), ajoutés à la main dans src/data/avis.js.
 //
 // Tant que Firebase n'est pas réglé, le bouton « Donner mon avis » ouvre WhatsApp.
@@ -149,7 +150,7 @@ const cinq = [1, 2, 3, 4, 5];
         <p class="sur-titre">Avis</p>
         <h3 id="titre-fiche-avis">Donner mon avis</h3>
         <p class="explication">
-          Votre avis est publié tout de suite sur cette page, avec votre nom.
+          Votre avis s'affichera sur cette page avec votre nom, une fois relu et validé.
           Les liens ne sont pas acceptés.
         </p>
 
@@ -191,7 +192,7 @@ const cinq = [1, 2, 3, 4, 5];
         </p>
 
         <div class="boutons">
-          <button class="btn btn--nuit" type="submit" data-publier-avis>Publier mon avis</button>
+          <button class="btn btn--nuit" type="submit" data-publier-avis>Envoyer mon avis</button>
           <button class="btn annuler" type="button" data-fermer>Annuler</button>
         </div>
       </form>
@@ -275,7 +276,7 @@ const cinq = [1, 2, 3, 4, 5];
       const base = `https://firestore.googleapis.com/v1/projects/${projet}/databases/(default)/documents`;
       const suffixe = cle ? `key=${encodeURIComponent(cle)}` : '';
 
-      type Champ = { stringValue?: string; integerValue?: string };
+      type Champ = { stringValue?: string; integerValue?: string; timestampValue?: string };
       const lire = (champs: Record<string, Champ>): UnAvis => ({
         nom: champs.nom?.stringValue ?? '',
         role: champs.role?.stringValue ?? '',
@@ -283,13 +284,28 @@ const cinq = [1, 2, 3, 4, 5];
         texte: champs.texte?.stringValue ?? '',
       });
 
+      // Seulement les avis validés par Samuel (les règles Firestore refusent tout le reste).
+      // Le tri par date se fait ici, pour ne pas avoir besoin d'un index dans Firebase.
       const charger = async () => {
         try {
-          const reponse = await fetch(`${base}/avis?pageSize=50&orderBy=date%20desc${suffixe ? '&' + suffixe : ''}`);
+          const reponse = await fetch(`${base}:runQuery${suffixe ? '?' + suffixe : ''}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              structuredQuery: {
+                from: [{ collectionId: 'avis' }],
+                where: { fieldFilter: { field: { fieldPath: 'valide' }, op: 'EQUAL', value: { booleanValue: true } } },
+                limit: 50,
+              },
+            }),
+          });
           if (!reponse.ok) return;
-          const donnees: { documents?: { fields: Record<string, Champ> }[] } = await reponse.json();
-          const enLigne = (donnees.documents ?? [])
-            .map((d) => lire(d.fields ?? {}))
+          const lignes: { document?: { fields?: Record<string, Champ> } }[] = await reponse.json();
+          const enLigne = lignes
+            .map((l) => l.document?.fields)
+            .filter((f): f is Record<string, Champ> => Boolean(f))
+            .sort((a, b) => (b.date?.timestampValue ?? '').localeCompare(a.date?.timestampValue ?? ''))
+            .map(lire)
             .filter((a) => a.nom && a.texte && a.note >= 1 && a.note <= 5);
           afficher([...enLigne, ...fixes]);
         } catch {
@@ -301,7 +317,7 @@ const cinq = [1, 2, 3, 4, 5];
       // Le bouton ouvre le formulaire au lieu de WhatsApp
       const bouton = section.querySelector<HTMLAnchorElement>('[data-donner-avis]')!;
       section.querySelector('[data-note-action]')!.textContent =
-        'Votre avis est publié tout de suite sur cette page, avec votre nom.';
+        "Votre avis s'affiche sur cette page avec votre nom, une fois relu et validé.";
 
       const formulaire = fiche.querySelector<HTMLFormElement>('[data-formulaire-avis]')!;
       const etat = fiche.querySelector<HTMLElement>('[data-etat-avis]')!;
@@ -356,7 +372,7 @@ const cinq = [1, 2, 3, 4, 5];
 
         // Robot : on fait comme si c'était envoyé, sans rien envoyer
         if (donnees.get('site') || Date.now() - ouvertA < 3000) {
-          etat.textContent = 'Merci ! Votre avis est publié.';
+          etat.textContent = 'Merci ! Votre avis sera affiché après validation.';
           return;
         }
         if (dejaPublie()) {
@@ -389,6 +405,7 @@ const cinq = [1, 2, 3, 4, 5];
                     role: { stringValue: role },
                     note: { integerValue: String(note) },
                     texte: { stringValue: texte },
+                    valide: { booleanValue: false },
                   },
                 },
                 currentDocument: { exists: false },
@@ -401,8 +418,7 @@ const cinq = [1, 2, 3, 4, 5];
           formulaire.reset();
           choixNote.dataset.note = '';
           compteur.textContent = '0 / 400';
-          etat.textContent = 'Merci ! Votre avis est publié.';
-          await charger();
+          etat.textContent = 'Merci ! Votre avis sera affiché après validation.';
           setTimeout(() => fiche.close(), 1600);
         } catch {
           etat.textContent = "Votre avis n'a pas pu être envoyé. Vérifiez votre connexion et réessayez.";
